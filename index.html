@@ -3,17 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>B52 VIP - FIX MỞ BÁT</title>
+    <title>B52 VIP - DRAG FIX</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
-    
     <script src="api.js"></script>
 
     <style>
         /* CORE STYLES */
         :root { --neon-gold: #ffd700; --neon-blue: #00f2ff; --neon-red: #ff004c; --bg-dark: #050505; }
         * { box-sizing: border-box; user-select: none; font-family: 'Rajdhani', sans-serif; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
-        body { background-color: var(--bg-dark); background-image: radial-gradient(circle at center, #1a1a1a 0%, #000000 100%); height: 100vh; overflow: hidden; color: #fff; }
+        body { background-color: var(--bg-dark); background-image: radial-gradient(circle at center, #1a1a1a 0%, #000000 100%); height: 100vh; overflow: hidden; color: #fff; touch-action: none; }
 
         /* Login UI */
         #login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 9999; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(10px); }
@@ -41,38 +40,40 @@
         .btn-bet { width: 100%; padding: 10px; border: none; font-weight: 900; cursor: pointer; border-radius: 5px; font-family: 'Orbitron'; color: #000; margin-bottom: 10px; }
         .tai .btn-bet { background: var(--neon-blue); box-shadow: 0 0 10px var(--neon-blue); } .xiu .btn-bet { background: var(--neon-red); box-shadow: 0 0 10px var(--neon-red); }
         
-        /* Bát đĩa & Dice */
+        /* Bàn Chơi */
         .center-stage { position: relative; width: 260px; height: 260px; display: flex; justify-content: center; align-items: center; }
         .plate { width: 240px; height: 240px; background: #222; border-radius: 50%; border: 5px solid var(--neon-gold); display: flex; justify-content: center; align-items: center; box-shadow: 0 0 30px rgba(0,0,0,0.8); }
-        .dice-wrap { display: flex; gap: 5px; flex-wrap: wrap; width: 140px; justify-content: center; }
-        .dice { width: 40px; height: 40px; background: #fff; border-radius: 8px; display: grid; grid-template-columns: repeat(3, 1fr); padding: 3px; box-shadow: inset 0 0 5px #000; }
-        .dot { background: #000; border-radius: 50%; margin: 2px; visibility: hidden; }
-        /* Dice dots logic */
-        .d1 .dot:nth-child(5) { visibility: visible; background: #d00000; width: 16px; height: 16px; margin: 7px; } .d2 .dot:nth-child(1), .d2 .dot:nth-child(9) { visibility: visible; } .d3 .dot:nth-child(1), .d3 .dot:nth-child(5), .d3 .dot:nth-child(9) { visibility: visible; } .d4 .dot:nth-child(1), .d4 .dot:nth-child(3), .d4 .dot:nth-child(7), .d4 .dot:nth-child(9) { visibility: visible; background: #d00000; } .d5 .dot:nth-child(1), .d5 .dot:nth-child(3), .d5 .dot:nth-child(5), .d5 .dot:nth-child(7), .d5 .dot:nth-child(9) { visibility: visible; } .d6 .dot:nth-child(1), .d6 .dot:nth-child(3), .d6 .dot:nth-child(4), .d6 .dot:nth-child(6), .d6 .dot:nth-child(7), .d6 .dot:nth-child(9) { visibility: visible; }
-
-        /* CÁI BÁT - QUAN TRỌNG CHO VIỆC KÉO */
+        
+        /* CÁI BÁT - STYLE ĐỂ KÉO */
         .lid { 
             width: 250px; height: 250px; 
             background: radial-gradient(circle at 30% 30%, #555, #111); 
             border-radius: 50%; position: absolute; 
             border: 4px solid #666; 
-            cursor: grab; z-index: 50; 
+            z-index: 50; 
             display: flex; justify-content: center; align-items: center; 
-            /* Bỏ transition mặc định để kéo mượt */
-            touch-action: none; /* Chặn cuộn trang trên mobile để kéo bát */
+            /* QUAN TRỌNG: Để kéo không bị trượt */
+            touch-action: none; 
+            user-select: none;
         }
-        .lid::after { content: 'B52'; font-family: 'Orbitron'; font-weight: 900; font-size: 3rem; color: rgba(255,255,255,0.1); }
-        .lid.locked { cursor: not-allowed; pointer-events: none; }
-        
-        .timer-badge { position: absolute; top: -40px; background: #000; border: 1px solid var(--neon-gold); color: var(--neon-gold); padding: 5px 20px; border-radius: 20px; font-weight: bold; font-family: 'Orbitron'; font-size: 1.2rem; z-index: 60; }
+        .lid::after { content: 'B52'; font-family: 'Orbitron'; font-weight: 900; font-size: 3rem; color: rgba(255,255,255,0.1); pointer-events: none; }
+        .lid.locked { cursor: not-allowed; }
+        .lid.draggable { cursor: grab; }
+        .lid.dragging { cursor: grabbing; }
+
+        .timer-badge { position: absolute; top: -40px; background: #000; border: 1px solid var(--neon-gold); color: var(--neon-gold); padding: 5px 20px; border-radius: 20px; font-weight: bold; font-family: 'Orbitron'; font-size: 1.2rem; z-index: 60; pointer-events: none; }
         .result-overlay { position: absolute; z-index: 40; font-size: 6rem; font-weight: 900; color: #fff; text-shadow: 0 0 20px #fff; opacity: 0; pointer-events: none; font-family: 'Orbitron'; }
+        
+        .dice-wrap { display: flex; gap: 5px; flex-wrap: wrap; width: 140px; justify-content: center; }
+        .dice { width: 40px; height: 40px; background: #fff; border-radius: 8px; display: grid; grid-template-columns: repeat(3, 1fr); padding: 3px; box-shadow: inset 0 0 5px #000; }
+        .dot { background: #000; border-radius: 50%; margin: 2px; visibility: hidden; }
+        .d1 .dot:nth-child(5) { visibility: visible; background: #d00000; width: 16px; height: 16px; margin: 7px; } .d2 .dot:nth-child(1), .d2 .dot:nth-child(9) { visibility: visible; } .d3 .dot:nth-child(1), .d3 .dot:nth-child(5), .d3 .dot:nth-child(9) { visibility: visible; } .d4 .dot:nth-child(1), .d4 .dot:nth-child(3), .d4 .dot:nth-child(7), .d4 .dot:nth-child(9) { visibility: visible; background: #d00000; } .d5 .dot:nth-child(1), .d5 .dot:nth-child(3), .d5 .dot:nth-child(5), .d5 .dot:nth-child(7), .d5 .dot:nth-child(9) { visibility: visible; } .d6 .dot:nth-child(1), .d6 .dot:nth-child(3), .d6 .dot:nth-child(4), .d6 .dot:nth-child(6), .d6 .dot:nth-child(7), .d6 .dot:nth-child(9) { visibility: visible; }
         
         .controls-container { position: absolute; bottom: 0; width: 100%; background: linear-gradient(0deg, #000 0%, rgba(0,0,0,0.8) 100%); padding: 15px 0; border-top: 1px solid #333; }
         .chip-scroll { display: flex; gap: 15px; overflow-x: auto; padding: 10px 20px; scrollbar-width: none; } .chip-scroll::-webkit-scrollbar { display: none; }
         .chip { flex: 0 0 auto; width: 60px; height: 60px; border-radius: 50%; background: #333; border: 3px dashed #fff; display: flex; justify-content: center; align-items: center; font-weight: 900; font-size: 0.8rem; color: #fff; cursor: pointer; transition: 0.2s; font-family: 'Orbitron'; position: relative; box-shadow: 0 5px 10px rgba(0,0,0,0.5); }
         .chip[data-val="1000000"] { background: #8e44ad; } .chip[data-val="5000000"] { background: #d35400; } .chip.active { transform: translateY(-10px) scale(1.1); box-shadow: 0 0 20px rgba(255,255,255,0.5); border-style: solid; z-index: 10; }
 
-        /* Modal */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 999; display: none; justify-content: center; align-items: center; }
         .modal-box { background: #111; border: 1px solid var(--neon-gold); width: 90%; max-width: 800px; height: 80%; display: flex; flex-direction: column; border-radius: 10px; }
         .modal-header { padding: 15px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; color: var(--neon-gold); font-weight: bold; }
@@ -80,13 +81,12 @@
         .graph-container { padding: 20px; height: 100%; background: #151515; } svg { width: 100%; height: 100%; } .chart-line { fill: none; stroke: var(--neon-gold); stroke-width: 2; }
         .dot-tai circle { fill: #000; stroke: #fff; stroke-width: 2; } .dot-tai text { fill: #fff; font-size: 10px; font-weight: bold; }
         .dot-xiu circle { fill: #fff; stroke: #000; stroke-width: 2; } .dot-xiu text { fill: #000; font-size: 10px; font-weight: bold; }
-        
         @keyframes shake { 0% { transform: translate(1px, 1px) rotate(0deg); } 50% { transform: translate(-1px, 2px) rotate(-1deg); } 100% { transform: translate(1px, -2px) rotate(0deg); } } .shaking { animation: shake 0.5s infinite; }
     </style>
 </head>
 <body>
 
-    <div id="login-overlay"><div class="login-box"><div class="login-header">B52 VIP</div><input type="text" id="username" class="inp-field" placeholder="Tên đăng nhập..."><input type="password" id="password" class="inp-field" placeholder="Mật khẩu..."><button class="btn-submit" onclick="handleAuth()">ĐĂNG NHẬP / ĐĂNG KÝ</button><div class="switch-txt" id="loading-text" style="color: gold; display: none;">Đang đồng bộ Server...</div></div></div>
+    <div id="login-overlay"><div class="login-box"><div class="login-header" id="form-title">B52 VIP</div><input type="text" id="username" class="inp-field" placeholder="Tên đăng nhập..."><input type="password" id="password" class="inp-field" placeholder="Mật khẩu..."><button class="btn-submit" onclick="handleAuth()">ĐĂNG NHẬP / ĐĂNG KÝ</button><div class="switch-txt" id="loading-text" style="color: gold; display: none;">Đang kết nối Server...</div></div></div>
 
     <div class="game-root" id="game-ui">
         <div class="top-bar">
@@ -117,18 +117,17 @@
         const BET_TIME = 50;
         let currentUser = null, globalData = null;
         let state = { chip:1000000, tempBet:{tai:0, xiu:0}, phase:'BETTING', lidThrown:false, result:null, roundId: 0, isDrag: false };
-        
         const el = (id) => document.getElementById(id);
         const formatMoney = (n) => n.toString().replace(/\B(?=(\d{3})+(?!\d))/g,",");
 
-        // --- HÀM SEED RANDOM ---
+        // --- RANDOM SEED ---
         function getDiceFromRoundID(roundID) {
             let seed = roundID * 12345;
             const r = () => { seed = (seed * 9301 + 49297) % 233280; return Math.ceil(seed / 233280 * 6); };
             return [r(), r(), r()];
         }
 
-        // --- LOGIN & SYNC ---
+        // --- AUTH ---
         async function checkAutoLogin() {
             const savedUser = localStorage.getItem(SESSION_KEY);
             if(savedUser) {
@@ -158,123 +157,191 @@
         function enterGame() {
             el('login-overlay').style.display='none'; el('game-ui').style.display='block'; el('display-user').innerText=currentUser.username;
             updateBalanceUI(); setInterval(syncTimeLoop, 1000); setInterval(syncDataBackground, 3000);
+            
+            // Kích hoạt kéo thả ngay từ đầu để gán sự kiện
+            setupDragEvents();
         }
 
-        // --- TIME LOOP ---
+        // --- GAME LOOP ---
         function syncTimeLoop() {
             let now = Math.floor(Date.now() / 1000);
             let currentRoundId = Math.floor(now / TOTAL_ROUND_TIME);
             let secondsInRound = now % TOTAL_ROUND_TIME;
-            
+            let timeLeft = 0;
+
             if (currentRoundId !== state.roundId) resetGameForNewRound(currentRoundId);
             el('round-id').innerText = "#" + currentRoundId;
 
             if (secondsInRound < BET_TIME) {
+                // Giai đoạn Cược
                 state.phase = 'BETTING';
                 el('timer').innerText = `CƯỢC: ${BET_TIME - secondsInRound}`;
                 el('timer').style.background = '#000'; el('timer').style.color = '#ffd700';
             } else {
+                // Giai đoạn Mở Bát (10s cuối)
                 state.phase = 'OPENING';
-                el('timer').innerText = `MỞ: ${TOTAL_ROUND_TIME - secondsInRound}`;
+                timeLeft = TOTAL_ROUND_TIME - secondsInRound;
+                el('timer').innerText = `MỞ: ${timeLeft}`;
                 el('timer').style.background = '#d00000'; el('timer').style.color = '#fff';
-                // Chỉ mở khóa để chuẩn bị kéo, KHÔNG AUTO OPEN NGAY
+                
+                // Mở khóa bát để người chơi tự kéo
                 if (!state.lidThrown) unlockLidForDrag(currentRoundId);
+
+                // --- QUAN TRỌNG: TỰ MỞ KHI HẾT GIỜ (0s) ---
+                if (timeLeft <= 0 && !state.lidThrown) {
+                    autoForceOpen();
+                }
             }
         }
 
         function resetGameForNewRound(newId) {
             state.roundId = newId; state.lidThrown = false; state.result = null; state.tempBet = { tai: 0, xiu: 0 }; state.isDrag = false;
-            // Reset UI
             const lid = el('lid');
-            lid.style.transform = 'translate(0,0)'; 
+            lid.style.transform = 'translate(0,0) rotate(0deg)'; 
             lid.style.opacity = '1'; 
-            lid.style.transition = '0.3s'; // Trả về mượt
-            lid.style.pointerEvents = 'none'; // Khóa click khi đang cược
+            lid.style.transition = '0.3s';
             lid.classList.add('locked');
+            lid.classList.remove('draggable');
+            lid.style.pointerEvents = 'none'; // Khóa chuột
             
             el('side-tai').classList.remove('win'); el('side-xiu').classList.remove('win'); el('result-num').style.opacity = '0';
             el('bet-tai').innerText = '0'; el('bet-xiu').innerText = '0';
             lid.classList.add('shaking'); setTimeout(() => lid.classList.remove('shaking'), 800);
         }
 
-        // --- XỬ LÝ MỞ BÁT (CÓ KÉO THẢ) ---
-        async function unlockLidForDrag(roundId) {
-            // Xác định kết quả trước nhưng chưa hiện
+        function unlockLidForDrag(roundId) {
+            if(state.result) return; // Đã setup rồi thì thôi
+
+            // 1. Chốt kết quả (Lấy từ server hoặc random)
             let dice = getDiceFromRoundID(roundId);
             if (globalData && globalData.adminCommand && globalData.adminCommand.d1 > 0) {
                  dice = [globalData.adminCommand.d1, globalData.adminCommand.d2, globalData.adminCommand.d3];
             }
             state.result = { dice: dice, sum: dice[0]+dice[1]+dice[2], winner: (dice[0]+dice[1]+dice[2]) >= 11 ? 'tai' : 'xiu' };
             
-            // Render xúc xắc bên dưới bát
+            // 2. Render Xúc Xắc (ẩn dưới bát)
             const ds = document.querySelectorAll('.dice');
             dice.forEach((v, i) => { 
                 ds[i].className = `dice d${v}`; 
                 ds[i].style.transform = `rotate(${Math.floor(Math.random() * 360)}deg)`;
-                // Render dots
-                ds[i].innerHTML = ''; // Clear old dots
-                for(let k=0; k<9; k++) { let d=document.createElement('div'); d.className='dot'; ds[i].appendChild(d); }
+                ds[i].innerHTML = ''; for(let k=0; k<9; k++) { let d=document.createElement('div'); d.className='dot'; ds[i].appendChild(d); }
             });
 
-            // MỞ KHÓA BÁT ĐỂ KÉO
+            // 3. Cho phép kéo (Unlock)
             const lid = el('lid');
             lid.classList.remove('locked');
-            lid.style.pointerEvents = 'auto'; // QUAN TRỌNG: Cho phép chuột tương tác
-            lid.style.cursor = 'grab';
-            
-            setupDragEvents();
+            lid.classList.add('draggable');
+            lid.style.pointerEvents = 'auto'; // Mở khóa chuột
         }
 
-        // --- LOGIC KÉO BÁT CHUẨN (FIXED) ---
+        // --- LOGIC KÉO THẢ (DRAG) ---
         function setupDragEvents() {
             const lid = el('lid');
-            let startX, startY, currentX = 0, currentY = 0;
+            let startX, startY;
 
-            const onDown = (e) => {
-                if (state.lidThrown) return;
+            const onStart = (e) => {
+                if (state.phase !== 'OPENING' || state.lidThrown) return;
                 state.isDrag = true;
-                lid.style.transition = 'none'; // Tắt transition để kéo dính chuột
-                lid.style.cursor = 'grabbing';
+                lid.style.transition = 'none'; // Tắt transition để kéo dính tay
+                lid.classList.add('dragging');
+                
                 const client = e.touches ? e.touches[0] : e;
-                startX = client.clientX - currentX;
-                startY = client.clientY - currentY;
+                // Tính offset để khi click vào đâu thì bát dính vào đó, không bị giật về tâm
+                const rect = lid.getBoundingClientRect();
+                startX = client.clientX - rect.left - (rect.width / 2); // Tọa độ tương đối so với tâm bát
+                startY = client.clientY - rect.top - (rect.height / 2);
             };
 
             const onMove = (e) => {
                 if (!state.isDrag) return;
+                e.preventDefault(); // Chặn cuộn trang
+                const client = e.touches ? e.touches[0] : e;
+                
+                // Tính toán vị trí mới
+                // Vì lid đang position: absolute và căn giữa bằng flex, ta dùng translate
+                // Ta cần tính khoảng cách di chuyển từ vị trí chuột hiện tại so với tâm màn hình
+                // Cách đơn giản: Lưu vị trí chuột lúc bắt đầu và tính delta
+                
+                // Cách tối ưu cho CSS translate:
+                // Ta chỉ cần di chuyển theo chuột.
+                // Ở đây ta dùng cách đơn giản: Lấy vị trí chuột hiện tại trừ đi vị trí chuột lúc bắt đầu
+                // Tuy nhiên do cách setupDragEvents này chỉ chạy 1 lần, ta cần biến toàn cục lưu vị trí chuột lúc Down
+            };
+            
+            // Viết lại logic drag đơn giản hơn để tránh lỗi giật
+            let dragStartX, dragStartY, initialX = 0, initialY = 0;
+
+            lid.addEventListener('mousedown', dragStart);
+            lid.addEventListener('touchstart', dragStart);
+
+            window.addEventListener('mousemove', dragMove);
+            window.addEventListener('touchmove', dragMove);
+
+            window.addEventListener('mouseup', dragEnd);
+            window.addEventListener('touchend', dragEnd);
+
+            function dragStart(e) {
+                if (state.phase !== 'OPENING' || state.lidThrown) return;
+                state.isDrag = true;
+                lid.style.transition = 'none';
+                
+                const client = e.touches ? e.touches[0] : e;
+                dragStartX = client.clientX;
+                dragStartY = client.clientY;
+            }
+
+            function dragMove(e) {
+                if (!state.isDrag) return;
                 e.preventDefault();
                 const client = e.touches ? e.touches[0] : e;
-                currentX = client.clientX - startX;
-                currentY = client.clientY - startY;
-                lid.style.transform = `translate(${currentX}px, ${currentY}px)`;
-            };
+                
+                const deltaX = client.clientX - dragStartX;
+                const deltaY = client.clientY - dragStartY;
+                
+                // Di chuyển bát theo chuột (hướng nào cũng được)
+                lid.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+            }
 
-            const onUp = () => {
+            function dragEnd(e) {
                 if (!state.isDrag) return;
                 state.isDrag = false;
-                lid.style.cursor = 'grab';
                 
-                // Tính khoảng cách kéo
-                const dist = Math.sqrt(currentX*currentX + currentY*currentY);
-                if (dist > 100) {
-                    // Kéo đủ xa -> Vứt bát
-                    state.lidThrown = true;
-                    lid.style.transition = '0.5s ease-out';
-                    lid.style.transform = `translate(${currentX * 1.5}px, ${currentY * 1.5}px) rotate(45deg)`;
-                    lid.style.opacity = '0';
-                    lid.style.pointerEvents = 'none';
-                    finalize();
-                } else {
-                    // Kéo chưa đủ -> Trả về chỗ cũ
-                    lid.style.transition = '0.3s ease-out';
-                    lid.style.transform = 'translate(0, 0)';
-                    currentX = 0; currentY = 0;
-                }
-            };
+                // Tính khoảng cách đã kéo (Pythagoras)
+                // Lấy transform hiện tại
+                const style = window.getComputedStyle(lid);
+                const matrix = new WebKitCSSMatrix(style.transform);
+                const dist = Math.sqrt(matrix.m41 * matrix.m41 + matrix.m42 * matrix.m42); // m41=x, m42=y
 
-            // Gán sự kiện (hỗ trợ cả chuột và cảm ứng)
-            lid.onmousedown = onDown; window.onmousemove = onMove; window.onmouseup = onUp;
-            lid.ontouchstart = onDown; window.ontouchmove = onMove; window.ontouchend = onUp;
+                if (dist > 100) { // Kéo xa hơn 100px thì mở luôn
+                    throwBowl(matrix.m41, matrix.m42);
+                } else {
+                    // Kéo chưa đủ -> Giật về chỗ cũ
+                    lid.style.transition = '0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)'; // Hiệu ứng đàn hồi
+                    lid.style.transform = 'translate(0, 0)';
+                }
+            }
+        }
+
+        function throwBowl(x, y) {
+            state.lidThrown = true;
+            const lid = el('lid');
+            lid.style.pointerEvents = 'none'; // Khóa ngay lập tức
+            lid.style.transition = '0.6s ease-out';
+            // Bay tiếp theo hướng đang kéo và xoay vòng
+            lid.style.transform = `translate(${x * 3}px, ${y * 3}px) rotate(120deg)`;
+            lid.style.opacity = '0';
+            finalize();
+        }
+
+        // TỰ ĐỘNG MỞ KHI HẾT 10 GIÂY
+        function autoForceOpen() {
+            state.lidThrown = true;
+            const lid = el('lid');
+            lid.style.pointerEvents = 'none';
+            lid.style.transition = '0.5s';
+            lid.style.transform = 'translate(0, -400px)'; // Bay thẳng lên trên
+            lid.style.opacity = '0';
+            finalize();
         }
 
         async function finalize() {
@@ -283,18 +350,16 @@
             if(state.result.winner === 'tai') { el('side-tai').classList.add('win'); if(state.tempBet.tai > 0) winAmt += state.tempBet.tai * 1.98; }
             else { el('side-xiu').classList.add('win'); if(state.tempBet.xiu > 0) winAmt += state.tempBet.xiu * 1.98; }
 
-            // Lưu kết quả global
+            // Update Server
             let latest = await getGlobalData();
             if(latest) {
-                // Update history chung
                 if(!latest.globalHistory) latest.globalHistory = [];
                 let exists = latest.globalHistory.find(h => h.id === state.roundId);
                 if (!exists) {
                     latest.globalHistory.push({id: state.roundId, sum: state.result.sum, winner: state.result.winner});
-                    if(latest.adminCommand) latest.adminCommand = { d1: 0, d2: 0, d3: 0 }; // Reset lệnh
+                    if(latest.adminCommand) latest.adminCommand = { d1: 0, d2: 0, d3: 0 };
                 }
                 
-                // Cộng tiền user
                 let idx = latest.users.findIndex(u => u.username === currentUser.username);
                 if(idx !== -1) {
                     if(winAmt > 0) latest.users[idx].balance += winAmt;
@@ -302,13 +367,11 @@
                         latest.users[idx].betHistory.forEach(b => {
                             if(b.roundId === state.roundId) {
                                 b.resultStr = state.result.winner.toUpperCase();
-                                if ((b.choice === 'Tài' && state.result.winner === 'tai') || (b.choice === 'Xỉu' && state.result.winner === 'xiu')) {
-                                    b.win = b.amount * 1.98;
-                                }
+                                if ((b.choice === 'Tài' && state.result.winner === 'tai') || (b.choice === 'Xỉu' && state.result.winner === 'xiu')) b.win = b.amount * 1.98;
                             }
                         });
                     }
-                    currentUser.balance = latest.users[idx].balance; // Update local
+                    currentUser.balance = latest.users[idx].balance;
                     currentUser.betHistory = latest.users[idx].betHistory;
                 }
                 await saveGlobalData(latest);
@@ -316,7 +379,7 @@
             }
         }
 
-        // --- UI UTILS ---
+        // --- UTILS ---
         async function syncDataBackground() {
             let d = await getGlobalData();
             if(d) { globalData = d; let me=d.users.find(u=>u.username===currentUser.username); if(me && state.phase==='BETTING' && currentUser.balance!==me.balance) { currentUser.balance=me.balance; updateBalanceUI(); } }
