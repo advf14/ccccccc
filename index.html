@@ -3,33 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>B52 VIP - FINAL AUTO OPEN</title>
+    <title>B52 VIP - NO LAG</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
     
     <script src="api.js"></script>
 
     <style>
-        /* CORE STYLES */
+        /* GIỮ NGUYÊN CSS CŨ */
         :root { --neon-gold: #ffd700; --neon-blue: #00f2ff; --neon-red: #ff004c; --bg-dark: #050505; }
         * { box-sizing: border-box; user-select: none; font-family: 'Rajdhani', sans-serif; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
         body { background-color: var(--bg-dark); background-image: radial-gradient(circle at center, #1a1a1a 0%, #000000 100%); height: 100vh; overflow: hidden; color: #fff; touch-action: none; }
-
-        /* Login UI */
         #login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 9999; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(10px); }
         .login-box { width: 90%; max-width: 400px; padding: 30px; background: rgba(20, 20, 20, 0.9); border: 1px solid var(--neon-gold); border-radius: 15px; box-shadow: 0 0 30px rgba(255, 215, 0, 0.3); text-align: center; }
         .login-header { color: var(--neon-gold); font-family: 'Orbitron'; font-size: 2rem; font-weight: 900; margin-bottom: 20px; text-transform: uppercase; }
         .inp-field { width: 100%; padding: 12px; margin-bottom: 15px; background: #000; border: 1px solid #444; color: #fff; border-radius: 5px; font-size: 1rem; }
         .btn-submit { width: 100%; padding: 12px; background: var(--neon-gold); color: #000; border: none; font-weight: 900; cursor: pointer; border-radius: 5px; font-family: 'Orbitron'; font-size: 1.1rem; }
-        
-        /* Game UI */
         .game-root { display: none; width: 100%; height: 100%; position: relative; }
         .top-bar { position: absolute; top: 0; width: 100%; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.8); z-index: 100; border-bottom: 1px solid #333; }
         .user-badge { display: flex; align-items: center; gap: 10px; font-size: 1rem; }
         .balance-plate { color: var(--neon-gold); font-weight: 900; font-family: 'Orbitron'; font-size: 1.2rem; background: #111; padding: 5px 15px; border-radius: 20px; border: 1px solid #444; }
         .header-btns { display: flex; gap: 5px; }
         .btn-tool { background: #222; border: 1px solid #444; color: #ccc; padding: 5px 10px; border-radius: 5px; font-size: 0.8rem; cursor: pointer; }
-        
         .game-wrapper { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -55%); width: 100%; max-width: 800px; display: flex; justify-content: space-around; align-items: center; }
         .bet-side { width: 25%; height: 280px; border-radius: 10px; border: 2px solid #333; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 10px; background: rgba(0,0,0,0.5); transition: 0.2s; }
         .bet-side.tai { border-color: rgba(0, 242, 255, 0.3); } .bet-side.xiu { border-color: rgba(255, 0, 76, 0.3); }
@@ -41,30 +36,22 @@
         .btn-bet { width: 100%; padding: 10px; border: none; font-weight: 900; cursor: pointer; border-radius: 5px; font-family: 'Orbitron'; color: #000; margin-bottom: 10px; }
         .tai .btn-bet { background: var(--neon-blue); box-shadow: 0 0 10px var(--neon-blue); } .xiu .btn-bet { background: var(--neon-red); box-shadow: 0 0 10px var(--neon-red); }
         .btn-bet:active { transform: scale(0.95); }
-
-        /* Bàn Chơi & Bát */
         .center-stage { position: relative; width: 260px; height: 260px; display: flex; justify-content: center; align-items: center; }
         .plate { width: 240px; height: 240px; background: #222; border-radius: 50%; border: 5px solid var(--neon-gold); display: flex; justify-content: center; align-items: center; box-shadow: 0 0 30px rgba(0,0,0,0.8); }
         .lid { width: 250px; height: 250px; background: radial-gradient(circle at 30% 30%, #555, #111); border-radius: 50%; position: absolute; border: 4px solid #666; z-index: 50; display: flex; justify-content: center; align-items: center; touch-action: none; user-select: none; }
         .lid::after { content: 'B52'; font-family: 'Orbitron'; font-weight: 900; font-size: 3rem; color: rgba(255,255,255,0.1); pointer-events: none; }
-        .lid.locked { cursor: not-allowed; }
-        .lid.draggable { cursor: grab; }
-        .lid.dragging { cursor: grabbing; }
-
+        .lid.locked { cursor: not-allowed; } .lid.draggable { cursor: grab; } .lid.dragging { cursor: grabbing; }
         .timer-badge { position: absolute; top: -40px; background: #000; border: 1px solid var(--neon-gold); color: var(--neon-gold); padding: 5px 20px; border-radius: 20px; font-weight: bold; font-family: 'Orbitron'; font-size: 1.2rem; z-index: 60; pointer-events: none; }
         .result-overlay { position: absolute; z-index: 40; font-size: 6rem; font-weight: 900; color: #fff; text-shadow: 0 0 20px #fff; opacity: 0; pointer-events: none; font-family: 'Orbitron'; }
-        
         .dice-wrap { display: flex; gap: 5px; flex-wrap: wrap; width: 140px; justify-content: center; }
         .dice { width: 40px; height: 40px; background: #fff; border-radius: 8px; display: grid; grid-template-columns: repeat(3, 1fr); padding: 3px; box-shadow: inset 0 0 5px #000; }
         .dot { background: #000; border-radius: 50%; margin: 2px; visibility: hidden; }
         .d1 .dot:nth-child(5) { visibility: visible; background: #d00000; width: 16px; height: 16px; margin: 7px; } .d2 .dot:nth-child(1), .d2 .dot:nth-child(9) { visibility: visible; } .d3 .dot:nth-child(1), .d3 .dot:nth-child(5), .d3 .dot:nth-child(9) { visibility: visible; } .d4 .dot:nth-child(1), .d4 .dot:nth-child(3), .d4 .dot:nth-child(7), .d4 .dot:nth-child(9) { visibility: visible; background: #d00000; } .d5 .dot:nth-child(1), .d5 .dot:nth-child(3), .d5 .dot:nth-child(5), .d5 .dot:nth-child(7), .d5 .dot:nth-child(9) { visibility: visible; } .d6 .dot:nth-child(1), .d6 .dot:nth-child(3), .d6 .dot:nth-child(4), .d6 .dot:nth-child(6), .d6 .dot:nth-child(7), .d6 .dot:nth-child(9) { visibility: visible; }
-        
         .controls-container { position: absolute; bottom: 0; width: 100%; background: linear-gradient(0deg, #000 0%, rgba(0,0,0,0.8) 100%); padding: 15px 0; border-top: 1px solid #333; }
         .chip-scroll { display: flex; gap: 15px; overflow-x: auto; padding: 10px 20px; scrollbar-width: none; } .chip-scroll::-webkit-scrollbar { display: none; }
         .chip { flex: 0 0 auto; width: 60px; height: 60px; border-radius: 50%; background: #333; border: 3px dashed #fff; display: flex; justify-content: center; align-items: center; font-weight: 900; font-size: 0.8rem; color: #fff; cursor: pointer; transition: 0.2s; font-family: 'Orbitron'; position: relative; box-shadow: 0 5px 10px rgba(0,0,0,0.5); }
         .chip[data-val="5000"] { background: #7f8c8d; } .chip[data-val="50000"] { background: #2980b9; } .chip[data-val="100000"] { background: #27ae60; } .chip[data-val="500000"] { background: #c0392b; } .chip[data-val="1000000"] { background: #8e44ad; } .chip[data-val="5000000"] { background: #d35400; } .chip[data-val="10000000"] { background: #16a085; } .chip[data-val="50000000"] { background: linear-gradient(45deg, #ffd700, #b8860b); color: #000; }
         .chip.active { transform: translateY(-10px) scale(1.1); box-shadow: 0 0 20px rgba(255,255,255,0.5); border-style: solid; z-index: 10; }
-
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 999; display: none; justify-content: center; align-items: center; }
         .modal-box { background: #111; border: 1px solid var(--neon-gold); width: 90%; max-width: 800px; height: 80%; display: flex; flex-direction: column; border-radius: 10px; }
         .modal-header { padding: 15px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; color: var(--neon-gold); font-weight: bold; }
@@ -73,6 +60,9 @@
         .dot-tai circle { fill: #000; stroke: #fff; stroke-width: 2; } .dot-tai text { fill: #fff; font-size: 10px; font-weight: bold; }
         .dot-xiu circle { fill: #fff; stroke: #000; stroke-width: 2; } .dot-xiu text { fill: #000; font-size: 10px; font-weight: bold; }
         @keyframes shake { 0% { transform: translate(1px, 1px) rotate(0deg); } 50% { transform: translate(-1px, 2px) rotate(-1deg); } 100% { transform: translate(1px, -2px) rotate(0deg); } } .shaking { animation: shake 0.5s infinite; }
+        @keyframes winText { 0% { transform: scale(1); opacity: 0; } 50% { transform: scale(1.5); opacity: 1; } 100% { transform: scale(1); opacity: 0; } }
+        .win-popup { position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); color: #00ff00; font-size: 3rem; font-weight: 900; text-shadow: 0 0 20px #00ff00; pointer-events: none; z-index: 100; opacity: 0; font-family: 'Orbitron'; }
+        .win-popup.show { animation: winText 2s ease-out; }
     </style>
 </head>
 <body>
@@ -80,6 +70,7 @@
     <div id="login-overlay"><div class="login-box"><div class="login-header" id="form-title">B52 VIP</div><input type="text" id="username" class="inp-field" placeholder="Tên đăng nhập..."><input type="password" id="password" class="inp-field" placeholder="Mật khẩu..."><button class="btn-submit" onclick="handleAuth()">ĐĂNG NHẬP / ĐĂNG KÝ</button><div class="switch-txt" id="loading-text" style="color: gold; display: none;">Đang đồng bộ Server...</div></div></div>
 
     <div class="game-root" id="game-ui">
+        <div id="win-msg" class="win-popup">+0 VNĐ</div>
         <div class="top-bar">
             <div class="user-badge"><i class="fas fa-user-circle"></i> <span id="display-user">Guest</span><div class="balance-plate"><span style="color:#ffd700">$</span> <span id="balance">0</span></div></div>
             <div class="header-btns"><div class="btn-tool" onclick="openModal('dataModal')">Lịch Sử</div><div class="btn-tool" onclick="openModal('graphModal')">Soi Cầu</div><div class="btn-tool" onclick="logout()" style="color:#ff5555; border-color:#ff5555">Thoát</div></div>
@@ -118,10 +109,12 @@
         const BET_TIME = 50;
         let currentUser = null, globalData = null;
         let state = { chip:1000000, tempBet:{tai:0, xiu:0}, phase:'BETTING', lidThrown:false, result:null, roundId: 0, isDrag: false };
+        let isSubmitting = false; // BIẾN KHÓA SYNC KHI ĐANG GỬI CƯỢC
+
         const el = (id) => document.getElementById(id);
         const formatMoney = (n) => n.toString().replace(/\B(?=(\d{3})+(?!\d))/g,",");
 
-        // --- HÀM SEED RANDOM ---
+        // --- RANDOM SEED ---
         function getDiceFromRoundID(roundID) {
             let seed = roundID * 12345;
             const r = () => { seed = (seed * 9301 + 49297) % 233280; return Math.ceil(seed / 233280 * 6); };
@@ -161,7 +154,7 @@
             setupDragEvents();
         }
 
-        // --- TIME LOOP (FIX TỰ ĐỘNG MỞ) ---
+        // --- TIME LOOP ---
         function syncTimeLoop() {
             let now = Math.floor(Date.now() / 1000);
             let currentRoundId = Math.floor(now / TOTAL_ROUND_TIME);
@@ -181,8 +174,7 @@
                 el('timer').style.background = '#d00000'; el('timer').style.color = '#fff';
                 
                 if (!state.lidThrown) unlockLidForDrag(currentRoundId);
-                
-                // FORCE OPEN: Khi đồng hồ <= 1s, BẮT BUỘC MỞ (Fix lỗi không mở)
+                // FORCE OPEN: Khi đồng hồ <= 1s
                 if (timeLeft <= 1 && !state.lidThrown) {
                     autoForceOpen();
                 }
@@ -192,11 +184,8 @@
         function resetGameForNewRound(newId) {
             state.roundId = newId; state.lidThrown = false; state.result = null; state.tempBet = { tai: 0, xiu: 0 }; state.isDrag = false;
             const lid = el('lid');
-            lid.style.transform = 'translate(0,0) rotate(0deg)'; 
-            lid.style.opacity = '1'; 
-            lid.style.transition = '0.3s';
+            lid.style.transform = 'translate(0,0) rotate(0deg)'; lid.style.opacity = '1'; lid.style.transition = '0.3s';
             lid.classList.add('locked'); lid.classList.remove('draggable'); lid.style.pointerEvents = 'none';
-            
             el('side-tai').classList.remove('win'); el('side-xiu').classList.remove('win'); el('result-num').style.opacity = '0';
             el('bet-tai').innerText = '0'; el('bet-xiu').innerText = '0';
             lid.classList.add('shaking'); setTimeout(() => lid.classList.remove('shaking'), 800);
@@ -211,8 +200,7 @@
             state.result = { dice: dice, sum: dice[0]+dice[1]+dice[2], winner: (dice[0]+dice[1]+dice[2]) >= 11 ? 'tai' : 'xiu' };
             const ds = document.querySelectorAll('.dice');
             dice.forEach((v, i) => { 
-                ds[i].className = `dice d${v}`; 
-                ds[i].style.transform = `rotate(${Math.floor(Math.random() * 360)}deg)`;
+                ds[i].className = `dice d${v}`; ds[i].style.transform = `rotate(${Math.floor(Math.random() * 360)}deg)`;
                 ds[i].innerHTML = ''; for(let k=0; k<9; k++) { let d=document.createElement('div'); d.className='dot'; ds[i].appendChild(d); }
             });
             const lid = el('lid');
@@ -223,74 +211,60 @@
         function setupDragEvents() {
             const lid = el('lid');
             let dragStartX, dragStartY;
-
             const dragStart = (e) => {
                 if (state.phase !== 'OPENING' || state.lidThrown) return;
-                state.isDrag = true;
-                lid.style.transition = 'none';
+                state.isDrag = true; lid.style.transition = 'none';
                 const client = e.touches ? e.touches[0] : e;
-                dragStartX = client.clientX;
-                dragStartY = client.clientY;
+                dragStartX = client.clientX; dragStartY = client.clientY;
             };
-
             const dragMove = (e) => {
-                if (!state.isDrag) return;
-                e.preventDefault();
+                if (!state.isDrag) return; e.preventDefault();
                 const client = e.touches ? e.touches[0] : e;
-                const deltaX = client.clientX - dragStartX;
-                const deltaY = client.clientY - dragStartY;
+                const deltaX = client.clientX - dragStartX; const deltaY = client.clientY - dragStartY;
                 lid.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
             };
-
             const dragEnd = (e) => {
-                if (!state.isDrag) return;
-                state.isDrag = false;
+                if (!state.isDrag) return; state.isDrag = false;
                 const style = window.getComputedStyle(lid);
                 const matrix = new WebKitCSSMatrix(style.transform);
                 const dist = Math.sqrt(matrix.m41 * matrix.m41 + matrix.m42 * matrix.m42);
-
                 if (dist > 100) throwBowl(matrix.m41, matrix.m42);
-                else {
-                    lid.style.transition = '0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
-                    lid.style.transform = 'translate(0, 0)';
-                }
+                else { lid.style.transition = '0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)'; lid.style.transform = 'translate(0, 0)'; }
             };
-
             lid.onmousedown = dragStart; lid.ontouchstart = dragStart;
             window.onmousemove = dragMove; window.ontouchmove = dragMove;
             window.onmouseup = dragEnd; window.ontouchend = dragEnd;
         }
 
         function throwBowl(x, y) {
-            state.lidThrown = true;
-            const lid = el('lid');
-            lid.style.pointerEvents = 'none';
-            lid.style.transition = '0.6s ease-out';
-            lid.style.transform = `translate(${x * 3}px, ${y * 3}px) rotate(120deg)`;
-            lid.style.opacity = '0';
-            finalize();
+            state.lidThrown = true; const lid = el('lid'); lid.style.pointerEvents = 'none'; lid.style.transition = '0.6s ease-out';
+            lid.style.transform = `translate(${x * 3}px, ${y * 3}px) rotate(120deg)`; lid.style.opacity = '0'; finalize();
         }
-
         function autoForceOpen() {
-            state.lidThrown = true;
-            const lid = el('lid');
-            lid.style.pointerEvents = 'none';
-            lid.style.transition = '0.5s';
-            lid.style.transform = 'translate(0, -400px)';
-            lid.style.opacity = '0';
-            finalize();
+            state.lidThrown = true; const lid = el('lid'); lid.style.pointerEvents = 'none'; lid.style.transition = '0.5s';
+            lid.style.transform = 'translate(0, -400px)'; lid.style.opacity = '0'; finalize();
         }
 
-        // --- CẬP NHẬT KẾT QUẢ VÀ LỊCH SỬ CẦU ---
+        // --- WIN LOGIC (FIXED) ---
         async function finalize() {
             el('result-num').innerText = state.result.sum; el('result-num').style.opacity = '1';
             let winAmt = 0;
             if(state.result.winner === 'tai') { el('side-tai').classList.add('win'); if(state.tempBet.tai > 0) winAmt += state.tempBet.tai * 1.98; }
             else { el('side-xiu').classList.add('win'); if(state.tempBet.xiu > 0) winAmt += state.tempBet.xiu * 1.98; }
 
+            // CỘNG NGAY TRÊN UI CHO SƯỚNG
+            if(winAmt > 0) {
+                currentUser.balance += winAmt;
+                updateBalanceUI();
+                const winPopup = document.getElementById('win-msg');
+                winPopup.innerText = "+" + formatMoney(winAmt); winPopup.classList.add('show');
+                setTimeout(() => winPopup.classList.remove('show'), 2000);
+            }
+
+            // GỬI SERVER
+            isSubmitting = true; // KHÓA ĐỒNG BỘ
             let latest = await getGlobalData();
             if(latest) {
-                // ĐẨY VÀO GLOBAL HISTORY NGAY LẬP TỨC (ĐỂ SOI CẦU HIỆN)
                 if(!latest.globalHistory) latest.globalHistory = [];
                 let exists = latest.globalHistory.find(h => h.id === state.roundId);
                 if (!exists) {
@@ -300,45 +274,60 @@
                 
                 let idx = latest.users.findIndex(u => u.username === currentUser.username);
                 if(idx !== -1) {
-                    if(winAmt > 0) latest.users[idx].balance += winAmt;
+                    // Update số dư thật trên Server
+                    // QUAN TRỌNG: Lấy số dư hiện tại của Client để ghi đè lên Server (tránh bị reset)
+                    latest.users[idx].balance = currentUser.balance; 
+                    
                     if(latest.users[idx].betHistory) {
                         latest.users[idx].betHistory.forEach(b => {
                             if(b.roundId === state.roundId) {
                                 b.resultStr = state.result.winner.toUpperCase();
-                                if ((b.choice === 'Tài' && state.result.winner === 'tai') || (b.choice === 'Xỉu' && state.result.winner === 'xiu')) b.win = b.amount * 1.98;
+                                if ((b.choice === 'Tài' && state.result.winner === 'tai') || (b.choice === 'Xỉu' && state.result.winner === 'xiu')) {
+                                    b.win = b.amount * 1.98;
+                                }
                             }
                         });
                     }
-                    currentUser.balance = latest.users[idx].balance;
                     currentUser.betHistory = latest.users[idx].betHistory;
                 }
-                
                 await saveGlobalData(latest);
-                globalData = latest; // Cập nhật local để vẽ
-                updateBalanceUI();
-                renderGraph(); // VẼ LẠI BIỂU ĐỒ NGAY
-            }
+                isSubmitting = false; // MỞ KHÓA
+                renderGraph();
+            } else isSubmitting = false;
         }
 
-        // --- CƯỢC NHANH (OPTIMISTIC UI UPDATE) ---
+        // --- BACKGROUND SYNC (CÓ KHÓA CHỐNG TRÔI TIỀN) ---
         async function syncDataBackground() {
+            if(isSubmitting) return; // NẾU ĐANG GỬI CƯỢC/NHẬN THƯỞNG THÌ KHÔNG ĐỒNG BỘ
+            
             let d = await getGlobalData();
-            if(d) { globalData = d; let me=d.users.find(u=>u.username===currentUser.username); if(me && state.phase==='BETTING' && currentUser.balance!==me.balance) { currentUser.balance=me.balance; updateBalanceUI(); } }
+            if(d) { 
+                globalData = d; 
+                let me = d.users.find(u => u.username === currentUser.username); 
+                // Chỉ đồng bộ khi không đang trong giai đoạn nhạy cảm
+                if(me && state.phase === 'BETTING' && state.tempBet.tai === 0 && state.tempBet.xiu === 0) { 
+                    currentUser.balance = me.balance; 
+                    updateBalanceUI(); 
+                } 
+            }
         }
         function updateBalanceUI() { el('balance').innerText = formatMoney(currentUser.balance); }
         function setChip(val, d) { state.chip = val; document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active')); d.classList.add('active'); }
         
+        // --- PLACE BET (FIX NHẢY TIỀN) ---
         function placeBet(s) {
             if(state.phase !== 'BETTING') return;
             if(currentUser.balance < state.chip) return alert("Hết tiền!");
             
-            // 1. Cập nhật UI ngay lập tức
+            isSubmitting = true; // KHÓA ĐỒNG BỘ NGAY
+            
+            // 1. Trừ tiền hiển thị ngay
             currentUser.balance -= state.chip;
             updateBalanceUI();
             s==='tai'?state.tempBet.tai+=state.chip:state.tempBet.xiu+=state.chip;
             el('bet-tai').innerText=formatMoney(state.tempBet.tai); el('bet-xiu').innerText=formatMoney(state.tempBet.xiu);
 
-            // 2. Gửi ngầm lên Server
+            // 2. Gửi lệnh
             sendBetToServer(s, state.chip);
         }
 
@@ -346,13 +335,17 @@
             let latest = await getGlobalData();
             let idx = latest.users.findIndex(u => u.username === currentUser.username);
             if(idx !== -1) {
-                latest.users[idx].balance -= amt; 
+                // QUAN TRỌNG: GHI ĐÈ SỐ DƯ ĐÃ TRỪ CỦA CLIENT LÊN SERVER
+                latest.users[idx].balance = currentUser.balance; 
+                
                 if(!latest.liveBets) latest.liveBets = {tai:[], xiu:[]};
                 latest.liveBets[s].push({u: currentUser.username, m: amt});
                 if(!latest.users[idx].betHistory) latest.users[idx].betHistory=[];
                 latest.users[idx].betHistory.push({roundId: state.roundId, choice: s==='tai'?'Tài':'Xỉu', amount: amt, win: 0, resultStr: '...'});
+                
                 await saveGlobalData(latest);
             }
+            isSubmitting = false; // MỞ KHÓA
         }
 
         function openModal(id) { el(id).style.display='flex'; if(id==='dataModal')renderTable(); if(id==='graphModal')renderGraph(); }
@@ -363,24 +356,12 @@
         }
         function renderGraph() {
             const c = el('graph-body');
-            // VẼ TỪ GLOBAL DATA, KHÔNG PHẢI USER DATA
-            let historySource = globalData && globalData.globalHistory ? globalData.globalHistory : [];
-            
-            if (historySource.length === 0) { c.innerHTML='<div style="text-align:center;padding-top:150px;color:#555;">Chưa có cầu</div>'; return; }
-            
-            const data = historySource.slice(-20); 
-            const w=860, h=450, pad=40, stepX=(w-pad*2)/19, stepY=(h-pad*2)/15;
+            if (!globalData || !globalData.globalHistory || globalData.globalHistory.length === 0) { c.innerHTML='<div style="text-align:center;padding-top:150px;color:#555;">Chưa có cầu</div>'; return; }
+            const data = globalData.globalHistory.slice(-20); const w=860, h=450, pad=40, stepX=(w-pad*2)/19, stepY=(h-pad*2)/15;
             let svg=`<svg viewBox="0 0 ${w} ${h}" style="background:#151515;">`;
             for(let i=3;i<=18;i++){ let y=h-pad-((i-3)*stepY); svg+=`<line x1="${pad}" y1="${y}" x2="${w-pad}" y2="${y}" stroke="#333"/><text x="${pad-10}" y="${y+4}" fill="#666" font-size="12" text-anchor="end">${i}</text>`; }
-            let p="", d=""; 
-            data.forEach((v,i)=>{ 
-                let x=pad+i*stepX, y=h-pad-((v.sum-3)*stepY); 
-                p+=`${x},${y} `; 
-                let cls=v.winner==='tai'?'dot-tai':'dot-xiu'; 
-                d+=`<g class="${cls}" transform="translate(${x},${y})"><circle r="12"/><text dy="4" text-anchor="middle">${v.sum}</text></g>`; 
-            });
-            svg+=`<polyline points="${p}" fill="none" stroke="#ffd700" stroke-width="2"/>${d}</svg>`; 
-            c.innerHTML=svg;
+            let p="", d=""; data.forEach((v,i)=>{ let x=pad+i*stepX, y=h-pad-((v.sum-3)*stepY); p+=`${x},${y} `; let cls=v.winner==='tai'?'dot-tai':'dot-xiu'; d+=`<g class="${cls}" transform="translate(${x},${y})"><circle r="12"/><text dy="4" text-anchor="middle">${v.sum}</text></g>`; });
+            svg+=`<polyline points="${p}" fill="none" stroke="#ffd700" stroke-width="2"/>${d}</svg>`; c.innerHTML=svg;
         }
         function logout() { localStorage.removeItem(SESSION_KEY); location.reload(); }
         checkAutoLogin();
