@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>B52 VIP - TAI XIU RONG</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@900&family=Rajdhani:wght@700&display=swap" rel="stylesheet">
+    
+    <script src="api.js"></script>
+
+    <style>
+        /* CORE */
+        :root { --neon-gold: #ffd700; --neon-blue: #00f2ff; --neon-red: #ff004c; --bg-dark: #050505; }
+        * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
+        body { background-color: var(--bg-dark); background-image: radial-gradient(circle at center, #1a1a1a 0%, #000000 100%); height: 100vh; overflow: hidden; color: #fff; touch-action: none; font-family: 'Rajdhani', sans-serif; }
+        
+        @media screen and (orientation: portrait) and (max-width: 900px) {
+            body { transform: rotate(90deg); transform-origin: bottom left; position: absolute; top: -100vw; left: 0; height: 100vw; width: 100vh; overflow: hidden; background-size: 100vh 100vw; }
+            .modal-overlay, .jackpot-alert { width: 100vh !important; height: 100vw !important; }
+        }
+
+        /* --- HŨ RỒNG (STYLE MỚI GIỐNG ẢNH BẠN GỬI) --- */
+        .dragon-pot {
+            position: absolute; top: 70px; left: 50%; transform: translateX(-50%);
+            z-index: 80; text-align: center;
+            display: flex; flex-direction: column; align-items: center;
+            pointer-events: none; /* Để không che nút bấm bên dưới */
+        }
+        
+        /* Chữ SĂN HŨ RỒNG màu ĐỎ RỰC */
+        .txt-sanhu {
+            font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 2.5rem;
+            color: #ff0000;
+            text-shadow: 0 0 10px #ff0000, 2px 2px 0 #550000;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            animation: pulse-red 1.5s infinite alternate;
+            margin-bottom: 5px;
+        }
+
+        .jackpot-num {
+            font-family: 'Orbitron'; font-weight: bold; font-size: 1.5rem; color: #fff;
+            background: #000; border: 2px solid gold; padding: 5px 25px; border-radius: 20px;
+            box-shadow: 0 0 15px gold;
+        }
+        @keyframes pulse-red { 0% { text-shadow: 0 0 10px red; transform: scale(1); } 100% { text-shadow: 0 0 30px red, 0 0 10px gold; transform: scale(1.05); } }
+
+        /* UI CHUNG */
+        .top-bar { position: absolute; top: 0; width: 100%; height: 60px; padding: 0 20px; display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.9); z-index: 100; border-bottom: 1px solid #333; }
+        .user-badge { display: flex; align-items: center; gap: 10px; font-weight: bold; color: gold; font-size: 1.1rem; }
+        .balance-plate { background: #333; padding: 2px 15px; border-radius: 20px; color: #fff; border: 1px solid #555; font-family: 'Orbitron'; }
+        .header-btns { display: flex; gap: 10px; }
+        .btn-tool { background: #222; border: 1px solid #555; padding: 5px 15px; border-radius: 5px; color: #ccc; cursor: pointer; display: flex; align-items: center; gap: 5px; font-weight: bold; }
+        .btn-tool:hover { color: gold; border-color: gold; }
+        
+        .game-wrapper { position: absolute; top: 60px; bottom: 80px; width: 100%; max-width: 900px; display: flex; justify-content: space-between; align-items: center; left: 50%; transform: translateX(-50%); }
+        .bet-side { width: 28%; height: 280px; border: 2px solid #333; border-radius: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(0,0,0,0.5); transition: 0.2s; position: relative; }
+        .bet-side.tai { border-color: var(--neon-blue); } .bet-side.xiu { border-color: var(--neon-red); }
+        .bet-side.tai.win { background: rgba(0, 242, 255, 0.2); box-shadow: 0 0 30px var(--neon-blue); border-color: #fff; }
+        .bet-side.xiu.win { background: rgba(255, 0, 76, 0.2); box-shadow: 0 0 30px var(--neon-red); border-color: #fff; }
+        
+        .side-title { font-family: 'Orbitron'; font-size: 3.5rem; font-weight: 900; margin-bottom: 10px; }
+        .tai .side-title { color: var(--neon-blue); text-shadow: 0 0 20px var(--neon-blue); } 
+        .xiu .side-title { color: var(--neon-red); text-shadow: 0 0 20px var(--neon-red); }
+        .total-global { font-size: 1rem; color: #ffd700; opacity: 0.8; margin-bottom: 5px; font-family: monospace; }
+        .current-bet { font-size: 1.5rem; font-weight: bold; color: #ffd700; background: #000; padding: 5px 20px; border-radius: 8px; border: 1px solid #444; width: 80%; text-align: center; font-family: 'Orbitron'; }
+        .btn-bet { width: 80%; padding: 12px; border: none; font-weight: 900; font-size: 1.2rem; cursor: pointer; border-radius: 8px; margin-top: 15px; color: #000; font-family: 'Orbitron'; }
+        .tai .btn-bet { background: var(--neon-blue); } .xiu .btn-bet { background: var(--neon-red); }
+        .btn-bet:active { transform: scale(0.95); }
+
+        /* BÁT ĐĨA */
+        .shaker-area { position: relative; width: 300px; height: 300px; display: flex; justify-content: center; align-items: center; }
+        .plate { width: 240px; height: 240px; background: radial-gradient(#333, #000); border-radius: 50%; border: 6px solid gold; box-shadow: 0 0 40px rgba(255, 215, 0, 0.15); display: flex; justify-content: center; align-items: center; position: relative; }
+        
+        /* BÁT (LID) - FIX LỖI KÉO BỊ GIẬT */
+        .lid { 
+            width: 260px; height: 260px; /* To hơn đĩa */
+            background: radial-gradient(circle at 30% 30%, #555, #111); 
+            border-radius: 50%; position: absolute; border: 4px solid #666; 
+            z-index: 50; display: flex; justify-content: center; align-items: center; 
+            box-shadow: inset 0 0 20px rgba(255,255,255,0.1), 0 20px 40px rgba(0,0,0,0.8); 
+            
+            /* CĂN GIỮA TUYỆT ĐỐI */
+            top: 50%; left: 50%; 
+            transform: translate(-50%, -50%);
+            
+            cursor: grab; touch-action: none; 
+            transition: transform 0.1s linear; /* Animation mượt khi kéo */
+        }
+        .lid::after { content: 'B52'; font-family: 'Orbitron'; font-weight: 900; font-size: 4rem; color: rgba(255,255,255,0.05); pointer-events: none; }
+        
+        /* Trạng thái mở */
+        .lid.open { transform: translate(-50%, -400px) rotate(20deg) !important; opacity: 0; pointer-events: none; transition: 0.5s ease-out; }
+        .lid.locked { cursor: not-allowed; filter: grayscale(0.5); pointer-events: none; }
+
+        /* --- SỬA LỖI ĐÈ: ĐƯA ĐỒNG HỒ XUỐNG DƯỚI ĐÁY BÁT --- */
+        .timer-badge { 
+            position: absolute; 
+            bottom: -50px; /* CHUYỂN XUỐNG DƯỚI */
+            top: auto;     /* XÓA TOP */
+            background: #000; border: 2px solid gold; color: gold; 
+            padding: 5px 25px; border-radius: 20px; font-weight: 900; font-family: 'Orbitron'; font-size: 1.3rem; 
+            z-index: 60; pointer-events: none; box-shadow: 0 0 10px gold; 
+        }
+
+        .result-overlay { position: absolute; z-index: 40; font-size: 7rem; font-weight: 900; color: #fff; text-shadow: 0 0 30px #fff; opacity: 0; pointer-events: none; font-family: 'Orbitron'; }
+        #round-id { position: absolute; bottom: -80px; color: #666; font-family: monospace; } /* Đẩy mã phiên xuống thấp hơn */
+
+        /* DICE */
+        .dice-wrap { display: flex; gap: 8px; justify-content: center; z-index: 5; }
+        .dice { width: 50px; height: 50px; background: #fff; border-radius: 10px; display: grid; grid-template-columns: repeat(3, 1fr); padding: 4px; box-shadow: inset 0 0 5px #000; flex-shrink: 0; }
+        .dot { background: #000; border-radius: 50%; margin: 2px; visibility: hidden; }
+        .d1 .dot:nth-child(5) { visibility: visible; background: red; width: 18px; height: 18px; margin: 9px; } .d2 .dot:nth-child(1), .d2 .dot:nth-child(9) { visibility: visible; } .d3 .dot:nth-child(1), .d3 .dot:nth-child(5), .d3 .dot:nth-child(9) { visibility: visible; } .d4 .dot:nth-child(1), .d4 .dot:nth-child(3), .d4 .dot:nth-child(7), .d4 .dot:nth-child(9) { visibility: visible; background: red; } .d5 .dot:nth-child(1), .d5 .dot:nth-child(3), .d5 .dot:nth-child(5), .d5 .dot:nth-child(7), .d5 .dot:nth-child(9) { visibility: visible; } .d6 .dot:nth-child(1), .d6 .dot:nth-child(3), .d6 .dot:nth-child(4), .d6 .dot:nth-child(6), .d6 .dot:nth-child(7), .d6 .dot:nth-child(9) { visibility: visible; }
+
+        /* FOOTER */
+        .controls-container { position: absolute; bottom: 0; width: 100%; background: linear-gradient(0deg, #000 0%, rgba(0,0,0,0) 100%); padding: 15px 0; border-top: 1px solid #333; }
+        .chip-scroll { display: flex; gap: 15px; overflow-x: auto; padding: 10px; justify-content: center; }
+        .chip { min-width: 60px; height: 60px; border-radius: 50%; background: #333; border: 3px dashed #fff; display: flex; justify-content: center; align-items: center; font-weight: 900; font-size: 0.8rem; color: #fff; cursor: pointer; transition: 0.2s; font-family: 'Orbitron'; position: relative; box-shadow: 0 5px 10px rgba(0,0,0,0.5); }
+        .chip[data-val="5000"] { background: #7f8c8d; } .chip[data-val="50000"] { background: #2980b9; } .chip[data-val="100000"] { background: #27ae60; } .chip[data-val="500000"] { background: #c0392b; } .chip[data-val="1000000"] { background: #8e44ad; } .chip[data-val="5000000"] { background: #d35400; } .chip[data-val="10000000"] { background: #16a085; } .chip[data-val="50000000"] { background: linear-gradient(45deg, #ffd700, #b8860b); color: #000; border-style: solid; }
+        .chip.active { transform: translateY(-10px) scale(1.1); box-shadow: 0 0 20px rgba(255,255,255,0.5); border-style: solid; z-index: 10; border-color: gold; }
+
+        /* MODAL FIX (NÚT X TÁCH RỜI) */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 200; display: none; justify-content: center; align-items: center; }
+        .modal-box { background: #151515; border: 1px solid var(--neon-gold); width: 800px; max-width: 90%; max-height: 80vh; display: flex; flex-direction: column; border-radius: 10px; }
+        /* FIX LỖI DÍNH CHỮ */
+        .modal-header { 
+            padding: 15px 20px; border-bottom: 1px solid #333; 
+            display: flex; justify-content: space-between; align-items: center; 
+            color: var(--neon-gold); font-weight: bold; font-family: 'Orbitron'; font-size: 1.2rem;
+        }
+        .close-btn { cursor: pointer; font-size: 1.8rem; color: #888; line-height: 1; } .close-btn:hover { color: #fff; }
+        .table-container { overflow-y: auto; padding: 15px; flex: 1; } table { width: 100%; color: #ccc; border-collapse: collapse; } th, td { padding: 10px; border-bottom: 1px solid #333; text-align: center; } .text-win { color: lime; } .text-lose { color: red; }
+        
+        .graph-container { padding: 20px; height: 100%; background: #151515; } svg { width: 100%; height: 100%; }
+        .dot-tai circle { fill: #000; stroke: #fff; stroke-width: 2; } .dot-tai text { fill: #fff; font-size: 10px; font-weight: bold; }
+        .dot-xiu circle { fill: #fff; stroke: #000; stroke-width: 2; } .dot-xiu text { fill: #000; font-size: 10px; font-weight: bold; }
+        @keyframes shake { 0% { transform: translate(-50%, -50%) rotate(0deg); } 25% { transform: translate(-52%, -48%) rotate(-5deg); } 75% { transform: translate(-48%, -52%) rotate(5deg); } 100% { transform: translate(-50%, -50%) rotate(0deg); } }
+        .shaking { animation: shake 0.5s infinite; }
+        
+        /* POPUPS */
+        @keyframes winText { 0% { transform: scale(1); opacity: 0; } 50% { transform: scale(1.5); opacity: 1; } 100% { transform: scale(1); opacity: 0; } }
+        .win-popup { position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); color: #00ff00; font-size: 4rem; font-weight: 900; text-shadow: 0 0 20px #00ff00; pointer-events: none; z-index: 100; opacity: 0; font-family: 'Orbitron'; width: 100%; text-align: center; }
+        .win-popup.show { animation: winText 2s ease-out; }
+        @keyframes jackpotBoom { 0% { transform: scale(0.5); opacity: 0; } 50% { transform: scale(1.2); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
+        .jackpot-alert { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; display: none; }
+        .jackpot-alert.show { display: flex; animation: jackpotBoom 0.5s ease-out; }
+        .jp-title { color: #ffd700; font-size: 5rem; font-family: 'Orbitron'; font-weight: 900; text-shadow: 0 0 50px red; }
+        .jp-amount { color: #fff; font-size: 3rem; font-family: 'Orbitron'; margin-top: 20px; }
+        #round-id { position: absolute; bottom: -80px; color: #666; font-family: monospace; z-index: 60; }
+    </style>
+</head>
+<body>
+
+    <div class="game-root" id="game-ui" style="display:block">
+        <div class="dragon-pot">
+            <div class="txt-sanhu">SĂN HŨ RỒNG</div>
+            <div class="jackpot-num" id="jackpot-val">5,000,000</div>
+        </div>
+
+        <div id="win-msg" class="win-popup">+0 VNĐ</div>
+        <div id="jp-alert" class="jackpot-alert"><div class="jp-title">NỔ HŨ!</div><div class="jp-amount" id="jp-win-amount">0 VNĐ</div></div>
+
+        <div class="top-bar">
+            <div class="user-badge"><i class="fas fa-user-circle"></i> <span id="display-user">Guest</span><div class="balance-plate"><span style="color:#ffd700">$</span> <span id="balance">0</span></div></div>
+            <div class="header-btns">
+                <div class="btn-tool" onclick="openModal('dataModal')">Lịch Sử</div>
+                <div class="btn-tool" onclick="openModal('graphModal')">Soi Cầu</div>
+                <div class="btn-tool" onclick="window.location.href='index.html'" style="color:#ff5555; border-color:#ff5555">Thoát</div>
+            </div>
+        </div>
+
+        <div class="game-wrapper">
+            <div class="bet-side tai" id="side-tai">
+                <div class="side-title">TÀI</div>
+                <div class="total-global" id="total-global-tai">0</div>
+                <div class="user-bet-label">Cược của bạn:</div>
+                <div class="current-bet" id="bet-tai">0</div>
+                <button class="btn-bet" onclick="placeBet('tai')">ĐẶT CƯỢC</button>
+            </div>
+
+            <div class="shaker-area">
+                <div class="center-stage">
+                    <div class="plate">
+                        <div class="dice-wrap">
+                            <div class="dice d1"><div class="dot"></div></div>
+                            <div class="dice d1"><div class="dot"></div></div>
+                            <div class="dice d1"><div class="dot"></div></div>
+                        </div>
+                    </div>
+                    <div class="lid locked" id="lid"></div>
+                    <div class="timer-badge" id="timer">00:00</div>
+                    <div class="result-overlay" id="result-num"></div>
+                    <div id="round-id">Phiên: #...</div>
+                </div>
+            </div>
+
+            <div class="bet-side xiu" id="side-xiu">
+                <div class="side-title">XỈU</div>
+                <div class="total-global" id="total-global-xiu">0</div>
+                <div class="user-bet-label">Cược của bạn:</div>
+                <div class="current-bet" id="bet-xiu">0</div>
+                <button class="btn-bet" onclick="placeBet('xiu')">ĐẶT CƯỢC</button>
+            </div>
+        </div>
+        
+        <div class="controls-container"><div class="chip-scroll">
+            <div class="chip" data-val="5000" onclick="setChip(5000, this)">5K</div>
+            <div class="chip" data-val="50000" onclick="setChip(50000, this)">50K</div>
+            <div class="chip" data-val="100000" onclick="setChip(100000, this)">100K</div>
+            <div class="chip" data-val="500000" onclick="setChip(500000, this)">500K</div>
+            <div class="chip active" data-val="1000000" onclick="setChip(1000000, this)">1M</div>
+            <div class="chip" data-val="5000000" onclick="setChip(5000000, this)">5M</div>
+            <div class="chip" data-val="10000000" onclick="setChip(10000000, this)">10M</div>
+            <div class="chip" data-val="50000000" onclick="setChip(50000000, this)">50M</div>
+        </div></div>
+    </div>
+
+    <div class="modal-overlay" id="dataModal"><div class="modal-box"><div class="modal-header"><span>LỊCH SỬ CƯỢC</span><span class="close-btn" onclick="closeModal('dataModal')"><i class="fas fa-times"></i></span></div><div class="table-container"><table id="bet-table"><thead><tr><th>#</th><th>Cửa</th><th>Cược</th><th>Kết Quả</th><th>Nhận</th></tr></thead><tbody></tbody></table></div></div></div>
+    <div class="modal-overlay" id="graphModal"><div class="modal-box"><div class="modal-header"><span>BIỂU ĐỒ</span><span class="close-btn" onclick="closeModal('graphModal')"><i class="fas fa-times"></i></span></div><div class="graph-container" id="graph-body"></div></div></div>
+
+    <script>
+        const SESSION_KEY = 'b52_current_session'; 
+        const TOTAL_ROUND_TIME = 60; const BET_TIME = 50;
+        const BOTS = ["Hung_Dev", "Tuan_Casino", "Nam_Lay", "Be_Nhi", "Dai_Gia_Chan_Dat", "Sieu_Cap_Vip_Pro", "Huyen_My", "Ngoc_Trinh", "User_8832", "Khach_Vang_Lai"];
+        let currentUser = null, globalData = null;
+        let state = { chip:1000000, tempBet:{tai:0, xiu:0}, phase:'BETTING', lidThrown:false, result:null, roundId: 0, isDrag: false };
+        let isSubmitting = false;
+
+        const el = (id) => document.getElementById(id);
+        const formatMoney = (n) => n.toString().replace(/\B(?=(\d{3})+(?!\d))/g,",");
+
+        function getDiceFromRoundID(roundID) {
+            let seed = roundID * 12345;
+            const r = () => { seed = (seed * 9301 + 49297) % 233280; return Math.ceil(seed / 233280 * 6); };
+            return [r(), r(), r()];
+        }
+
+        async function checkAutoLogin() {
+            const savedUser = localStorage.getItem(SESSION_KEY);
+            if(!savedUser) { window.location.href = 'index.html'; return; }
+            globalData = await getGlobalData();
+            if(globalData) {
+                let acc = globalData.users.find(u => u.username === savedUser);
+                if(acc) { currentUser = acc; enterGame(); } else window.location.href = 'index.html';
+            }
+        }
+
+        function enterGame() {
+            el('game-ui').style.display='block'; el('display-user').innerText=currentUser.username;
+            updateBalanceUI(); setInterval(syncTimeLoop, 1000); setInterval(syncDataBackground, 3000);
+            setInterval(runBots, 4000); fillMissingHistory(); setupDragEvents();
+        }
+
+        function fillMissingHistory() {
+            if (!globalData || !globalData.globalHistory) return;
+            let now = Math.floor(Date.now() / 1000); let currentRound = Math.floor(now / TOTAL_ROUND_TIME);
+            globalData.globalHistory.sort((a, b) => a.id - b.id);
+            let lastRound = globalData.globalHistory.length > 0 ? globalData.globalHistory[globalData.globalHistory.length - 1].id : currentRound - 20;
+            let startFill = Math.max(lastRound + 1, currentRound - 50);
+            for (let i = startFill; i < currentRound; i++) {
+                let dice = getDiceFromRoundID(i); let sum = dice[0]+dice[1]+dice[2]; let winner = sum>=11?'tai':'xiu';
+                globalData.globalHistory.push({id: i, sum: sum, winner: winner});
+            }
+            if (globalData.globalHistory.length > 100) globalData.globalHistory = globalData.globalHistory.slice(-100);
+        }
+
+        async function runBots() {
+            if(state.phase !== 'BETTING') return;
+            if(Math.random() > 0.6) return;
+            let botName = BOTS[Math.floor(Math.random() * BOTS.length)];
+            let side = Math.random() > 0.5 ? 'tai' : 'xiu';
+            let amount = [50000, 100000, 500000, 1000000, 5000000][Math.floor(Math.random() * 5)];
+            let latest = await getGlobalData();
+            if(latest) {
+                if(!latest.liveBets) latest.liveBets = {tai:[], xiu:[]};
+                latest.liveBets[side].push({u: botName, m: amount});
+                await saveGlobalData(latest);
+            }
+        }
+
+        function syncTimeLoop() {
+            let now = Math.floor(Date.now() / 1000);
+            let currentRoundId = Math.floor(now / TOTAL_ROUND_TIME);
+            let secondsInRound = now % TOTAL_ROUND_TIME;
+            let timeLeft = TOTAL_ROUND_TIME - secondsInRound;
+
+            if (currentRoundId !== state.roundId) resetGameForNewRound(currentRoundId);
+            el('round-id').innerText = "#" + currentRoundId;
+
+            if (secondsInRound < BET_TIME) {
+                state.phase = 'BETTING'; el('timer').innerText = `CƯỢC: ${BET_TIME - secondsInRound}`; el('timer').style.color = 'gold';
+            } else {
+                state.phase = 'OPENING'; el('timer').innerText = `Mở: ${timeLeft}`; el('timer').style.color = 'red';
+                if (!state.lidThrown) unlockLidForDrag(currentRoundId);
+                if (timeLeft <= 3 && !state.lidThrown) autoForceOpen();
+            }
+        }
+
+        function resetGameForNewRound(newId) {
+            state.roundId = newId; state.lidThrown = false; state.result = null; state.tempBet = { tai: 0, xiu: 0 }; state.isDrag = false;
+            const lid = el('lid');
+            lid.style.transform = 'translate(-50%, -50%)'; lid.style.opacity = '1'; lid.style.transition = '0.3s';
+            lid.classList.add('locked'); lid.classList.remove('draggable'); lid.style.pointerEvents = 'none';
+            el('side-tai').classList.remove('win'); el('side-xiu').classList.remove('win'); el('result-num').innerText = '';
+            el('bet-tai').innerText = '0'; el('bet-xiu').innerText = '0';
+            el('total-global-tai').innerText = '0'; el('total-global-xiu').innerText = '0';
+            el('jp-alert').classList.remove('show');
+            lid.classList.add('shaking'); setTimeout(() => lid.classList.remove('shaking'), 800);
+        }
+
+        function unlockLidForDrag(roundId) {
+            if(state.result) return;
+            let dice = getDiceFromRoundID(roundId);
+            if (globalData && globalData.adminCommand && globalData.adminCommand.d1 > 0) {
+                 dice = [globalData.adminCommand.d1, globalData.adminCommand.d2, globalData.adminCommand.d3];
+            }
+            state.result = { dice: dice, sum: dice[0]+dice[1]+dice[2], winner: (dice[0]+dice[1]+dice[2]) >= 11 ? 'tai' : 'xiu' };
+            const ds = document.querySelectorAll('.dice');
+            dice.forEach((v, i) => { 
+                ds[i].className = `dice d${v}`; ds[i].style.transform = `rotate(${Math.floor(Math.random() * 360)}deg)`;
+                ds[i].innerHTML = ''; for(let k=0; k<9; k++) { let d=document.createElement('div'); d.className='dot'; ds[i].appendChild(d); }
+            });
+            const lid = el('lid');
+            lid.classList.remove('locked'); lid.classList.add('draggable'); lid.style.pointerEvents = 'auto';
+        }
+
+        function setupDragEvents() {
+            const lid = el('lid'); let dragStartX, dragStartY;
+            const dragStart = (e) => {
+                if (state.phase !== 'OPENING' || state.lidThrown) return;
+                state.isDrag = true; lid.style.transition = 'none';
+                const client = e.touches ? e.touches[0] : e;
+                dragStartX = client.clientX; dragStartY = client.clientY;
+            };
+            const dragMove = (e) => {
+                if (!state.isDrag) return; e.preventDefault();
+                const client = e.touches ? e.touches[0] : e;
+                const deltaX = client.clientX - dragStartX; const deltaY = client.clientY - dragStartY;
+                lid.style.transform = `translate(calc(-50% + ${deltaX}px), calc(-50% + ${deltaY}px))`;
+            };
+            const dragEnd = (e) => {
+                if (!state.isDrag) return; state.isDrag = false;
+                const style = window.getComputedStyle(lid);
+                const matrix = new WebKitCSSMatrix(style.transform);
+                if (Math.abs(matrix.m42) > 100) throwBowl();
+                else { lid.style.transition = '0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)'; lid.style.transform = 'translate(-50%, -50%)'; }
+            };
+            lid.onmousedown = dragStart; lid.ontouchstart = dragStart;
+            window.onmousemove = dragMove; window.ontouchmove = dragMove;
+            window.onmouseup = dragEnd; window.ontouchend = dragEnd;
+        }
+
+        function throwBowl() {
+            state.lidThrown = true; const lid = el('lid'); lid.style.pointerEvents = 'none'; lid.style.transition = '0.6s ease-out';
+            lid.style.transform = `translate(-50%, -400px) rotate(20deg)`; lid.style.opacity = '0'; finalize();
+        }
+        function autoForceOpen() {
+            if (state.lidThrown) return;
+            state.lidThrown = true; const lid = el('lid'); lid.style.pointerEvents = 'none'; lid.style.transition = '0.5s';
+            lid.style.transform = 'translate(-50%, -400px)'; lid.style.opacity = '0'; finalize();
+        }
+
+        // --- CỘNG TIỀN (FIX CHUẨN) ---
+        async function finalize() {
+            el('result-num').innerText = state.result.sum;
+            let winAmt = 0; let jackpotWin = 0; let lostAmt = 0;
+            if(state.result.winner === 'tai') { 
+                el('side-tai').classList.add('win'); 
+                if(state.tempBet.tai > 0) winAmt += state.tempBet.tai * 1.98;
+                if(state.tempBet.xiu > 0) lostAmt += state.tempBet.xiu;
+            } else { 
+                el('side-xiu').classList.add('win'); 
+                if(state.tempBet.xiu > 0) winAmt += state.tempBet.xiu * 1.98;
+                if(state.tempBet.tai > 0) lostAmt += state.tempBet.tai;
+            }
+
+            let isTaiJackpot = (state.result.dice[0] == 6 && state.result.dice[1] == 6 && state.result.dice[2] == 6);
+            let isXiuJackpot = (state.result.dice[0] == 3 && state.result.dice[1] == 3 && state.result.dice[2] == 3);
+            
+            isSubmitting = true; 
+            let latest = await getGlobalData();
+            
+            if(latest) {
+                let currentJP = latest.jackpot || 5000000;
+                if ((isTaiJackpot && state.tempBet.tai > 0) || (isXiuJackpot && state.tempBet.xiu > 0)) {
+                    jackpotWin = currentJP; winAmt += jackpotWin; latest.jackpot = 5000000; 
+                    el('jp-win-amount').innerText = formatMoney(jackpotWin) + " VNĐ"; el('jp-alert').classList.add('show');
+                } else if (lostAmt > 0) {
+                    latest.jackpot += lostAmt * 0.05;
+                }
+
+                // CỘNG NGAY VÀO BALANCE SERVER
+                let idx = latest.users.findIndex(u => u.username === currentUser.username);
+                if(idx !== -1) {
+                    latest.users[idx].balance += winAmt; // Cộng trực tiếp vào server
+                    // Cập nhật lịch sử thắng thua
+                     if(latest.users[idx].betHistory) {
+                        latest.users[idx].betHistory.forEach(b => {
+                            if(b.roundId === state.roundId) {
+                                b.resultStr = state.result.winner.toUpperCase();
+                                if ((b.choice === 'Tài' && state.result.winner === 'tai') || (b.choice === 'Xỉu' && state.result.winner === 'xiu')) {
+                                    b.win = b.amount * 1.98;
+                                }
+                            }
+                        });
+                    }
+                    currentUser.betHistory = latest.users[idx].betHistory;
+                    // Đồng bộ local
+                    currentUser.balance = latest.users[idx].balance;
+                }
+
+                if(winAmt > 0) {
+                    updateBalanceUI();
+                    const winPopup = document.getElementById('win-msg');
+                    winPopup.innerText = "+" + formatMoney(winAmt); winPopup.classList.add('show');
+                    setTimeout(() => winPopup.classList.remove('show'), 2000);
+                }
+
+                // CẬP NHẬT CẦU
+                if(!latest.globalHistory) latest.globalHistory = [];
+                let exists = latest.globalHistory.find(h => h.id === state.roundId);
+                if (!exists) {
+                    latest.globalHistory.push({id: state.roundId, sum: state.result.sum, winner: state.result.winner});
+                    if(latest.adminCommand) latest.adminCommand = { d1: 0, d2: 0, d3: 0 };
+                }
+                
+                await saveGlobalData(latest);
+                globalData = latest;
+                isSubmitting = false;
+                renderGraph(); 
+            } else isSubmitting = false;
+        }
+
+        async function syncDataBackground() {
+            if(isSubmitting) return; 
+            let d = await getGlobalData();
+            if(d) { 
+                globalData = d; 
+                if(d.jackpot) el('jackpot-val').innerText = formatMoney(parseInt(d.jackpot));
+                
+                let totalT = 0, totalX = 0;
+                if(d.liveBets) {
+                    if(d.liveBets.tai) d.liveBets.tai.forEach(b => totalT += b.m);
+                    if(d.liveBets.xiu) d.liveBets.xiu.forEach(b => totalX += b.m);
+                }
+                el('total-global-tai').innerText = formatMoney(totalT);
+                el('total-global-xiu').innerText = formatMoney(totalX);
+
+                let me = d.users.find(u => u.username === currentUser.username); 
+                if(me && state.phase === 'BETTING' && state.tempBet.tai === 0 && state.tempBet.xiu === 0) { 
+                    currentUser.balance = me.balance; 
+                    updateBalanceUI(); 
+                } 
+            }
+        }
+        function updateBalanceUI() { el('balance').innerText = formatMoney(currentUser.balance); }
+        function setChip(val, d) { state.chip = val; document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active')); d.classList.add('active'); }
+        
+        function placeBet(s) {
+            if(state.phase !== 'BETTING') return;
+            if(currentUser.balance < state.chip) return alert("Hết tiền!");
+            isSubmitting = true; 
+            currentUser.balance -= state.chip; updateBalanceUI(); 
+            s==='tai'?state.tempBet.tai+=state.chip:state.tempBet.xiu+=state.chip;
+            el('bet-tai').innerText=formatMoney(state.tempBet.tai); el('bet-xiu').innerText=formatMoney(state.tempBet.xiu);
+            sendBetToServer(s, state.chip);
+        }
+
+        async function sendBetToServer(s, amt) {
+            let latest = await getGlobalData();
+            let idx = latest.users.findIndex(u => u.username === currentUser.username);
+            if(idx !== -1) {
+                latest.users[idx].balance = currentUser.balance; 
+                if(!latest.liveBets) latest.liveBets = {tai:[], xiu:[]};
+                latest.liveBets[s].push({u: currentUser.username, m: amt});
+                if(!latest.users[idx].betHistory) latest.users[idx].betHistory=[];
+                latest.users[idx].betHistory.push({roundId: state.roundId, choice: s==='tai'?'Tài':'Xỉu', amount: amt, win: 0, resultStr: '...'});
+                await saveGlobalData(latest);
+            }
+            isSubmitting = false; 
+        }
+
+        function openModal(id) { el(id).style.display='flex'; if(id==='dataModal')renderTable(); if(id==='graphModal')renderGraph(); }
+        function closeModal(id) { el(id).style.display='none'; }
+        function renderTable() {
+            const tb = document.querySelector('#bet-table tbody'); tb.innerHTML='';
+            if(currentUser && currentUser.betHistory) currentUser.betHistory.slice().reverse().slice(0,15).forEach(b => { tb.innerHTML += `<tr><td>#${b.roundId}</td><td>${b.choice}</td><td>${formatMoney(b.amount)}</td><td class="${b.win>0?'text-win':'text-lose'}">${b.resultStr}</td><td class="${b.win>0?'text-win':''}">${b.win>0?'+'+formatMoney(b.win):'0'}</td></tr>`; });
+        }
+        function renderGraph() {
+            const c = el('graph-body');
+            let historySource = globalData && globalData.globalHistory ? globalData.globalHistory : [];
+            if (historySource.length === 0) { c.innerHTML='<div style="text-align:center;padding-top:150px;color:#555;">Chưa có cầu</div>'; return; }
+            const data = historySource.slice(-20); 
+            const w=860, h=450, pad=40, stepX=(w-pad*2)/19, stepY=(h-pad*2)/15;
+            let svg=`<svg viewBox="0 0 ${w} ${h}" style="background:#151515;">`;
+            for(let i=3;i<=18;i++){ let y=h-pad-((i-3)*stepY); svg+=`<line x1="${pad}" y1="${y}" x2="${w-pad}" y2="${y}" stroke="#333"/><text x="${pad-10}" y="${y+4}" fill="#666" font-size="12" text-anchor="end">${i}</text>`; }
+            let p="", d=""; 
+            data.forEach((v,i)=>{ 
+                let x=pad+i*stepX, y=h-pad-((v.sum-3)*stepY); 
+                p+=`${x},${y} `; 
+                let cls=v.winner==='tai'?'dot-tai':'dot-xiu'; 
+                d+=`<g class="${cls}" transform="translate(${x},${y})"><circle r="12"/><text dy="4" text-anchor="middle">${v.sum}</text></g>`; 
+            });
+            svg+=`<polyline points="${p}" fill="none" stroke="#ffd700" stroke-width="2"/>${d}</svg>`; 
+            c.innerHTML=svg;
+        }
+        
+        checkAutoLogin();
+    </script>
+</body>
+</html>
