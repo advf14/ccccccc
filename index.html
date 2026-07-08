@@ -1,189 +1,616 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>B52 VIP - CỔNG GAME QUỐC TẾ</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
-    
-    <script src="api.js"></script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Chóngu Chat</title>
+<style>
+  :root {
+    --canvas: #191919;
+    --surface: #202020;
+    --raised: #2a2a29;
+    --hover: #383836;
+    --text: #ffffff;
+    --text2: rgba(255,255,255,.65);
+    --text3: rgba(255,255,255,.4);
+    --border: rgba(255,255,255,.12);
+    --accent: #5E9FE8;
+    --accent-soft: rgba(94,159,232,.15);
+    --green: #72BC8F;
+    --red: #E97366;
+    --radius: 10px;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: var(--font);
+    background: var(--canvas);
+    color: var(--text);
+    font-size: 15px;
+    line-height: 1.5;
+    overflow: hidden;
+  }
+  button { font-family: inherit; cursor: pointer; border: none; }
+  input, textarea { font-family: inherit; }
 
-    <style>
-        :root { --neon-gold: #ffd700; --neon-blue: #00f2ff; --neon-red: #ff004c; --bg-dark: #050505; }
-        * { box-sizing: border-box; user-select: none; font-family: 'Rajdhani', sans-serif; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
-        
-        body { 
-            background-color: var(--bg-dark); 
-            background-image: radial-gradient(circle at 50% 0%, #1f1f1f 0%, #000 80%), url('https://www.transparenttextures.com/patterns/carbon-fibre.png');
-            height: 100vh; overflow: hidden; color: #fff; 
-        }
+  /* ---------- Login screen ---------- */
+  #login {
+    position: fixed; inset: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: center;
+    background: radial-gradient(1200px 600px at 50% -10%, #24303f, var(--canvas));
+    padding: 24px;
+  }
+  .login-card {
+    width: 100%; max-width: 380px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+    box-shadow: 0 10px 40px rgba(0,0,0,.4);
+  }
+  .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+  .brand .logo { width: 40px; height: 40px; border-radius: 10px; background: linear-gradient(135deg, var(--accent), #8a6ee0); display:flex; align-items:center; justify-content:center; font-size: 22px; }
+  .brand h1 { font-size: 22px; font-weight: 700; }
+  .login-sub { color: var(--text2); font-size: 14px; margin-bottom: 24px; }
+  .field { margin-bottom: 14px; }
+  .field label { display:block; font-size: 13px; color: var(--text2); margin-bottom: 6px; }
+  .field input {
+    width: 100%; padding: 11px 12px; border-radius: 8px;
+    background: var(--canvas); border: 1px solid var(--border); color: var(--text); font-size: 15px;
+  }
+  .field input:focus { outline: none; border-color: var(--accent); }
+  .btn {
+    width: 100%; padding: 12px; border-radius: 8px; font-size: 15px; font-weight: 600;
+    background: var(--accent); color: #fff; transition: filter .15s;
+  }
+  .btn:hover { filter: brightness(1.08); }
+  .btn.secondary { background: var(--raised); color: var(--text); border: 1px solid var(--border); }
+  .login-hint { text-align:center; color: var(--text3); font-size: 12px; margin-top: 16px; }
+  .avatar-pick { display:flex; gap: 8px; flex-wrap: wrap; }
+  .avatar-pick button { width: 40px; height: 40px; border-radius: 10px; font-size: 20px; background: var(--canvas); border: 2px solid transparent; }
+  .avatar-pick button.sel { border-color: var(--accent); }
 
-        /* --- TOP BAR --- */
-        .top-bar { 
-            position: fixed; top: 0; width: 100%; height: 70px; padding: 0 30px; 
-            display: flex; justify-content: space-between; align-items: center; 
-            background: rgba(0,0,0,0.8); border-bottom: 1px solid rgba(255,215,0,0.2); z-index: 100;
-            backdrop-filter: blur(10px);
-        }
-        .logo { font-family: 'Orbitron'; font-size: 2rem; font-weight: 900; color: var(--neon-gold); text-shadow: 0 0 10px orange; letter-spacing: 2px; }
-        .user-info { display: flex; align-items: center; gap: 20px; font-weight: bold; font-size: 1.1rem; }
-        .balance-box { color: var(--neon-gold); border: 1px solid var(--neon-gold); padding: 5px 20px; border-radius: 20px; background: rgba(0,0,0,0.5); }
-        .btn-logout { cursor: pointer; color: var(--neon-red); font-size: 1.5rem; transition: 0.3s; }
-        .btn-logout:hover { transform: scale(1.2); text-shadow: 0 0 10px red; }
+  /* ---------- App layout ---------- */
+  #app { display: none; height: 100%; }
+  .layout { display: grid; grid-template-columns: 72px 240px 1fr 220px; height: 100%; }
 
-        /* --- GAME LIST --- */
-        .lobby-container {
-            height: 100vh; display: flex; justify-content: center; align-items: center;
-            flex-direction: column; padding-top: 50px;
-        }
-        .welcome-text { font-family: 'Orbitron'; font-size: 2.5rem; margin-bottom: 40px; text-shadow: 0 0 20px rgba(255,255,255,0.5); text-align: center; }
-        
-        .game-grid { display: flex; gap: 40px; flex-wrap: wrap; justify-content: center; }
+  /* server rail */
+  .rail { background: #141414; display:flex; flex-direction:column; align-items:center; padding: 12px 0; gap: 10px; border-right: 1px solid var(--border); }
+  .rail .pill { width: 46px; height: 46px; border-radius: 14px; background: var(--raised); display:flex; align-items:center; justify-content:center; font-size:22px; transition: border-radius .15s, background .15s; }
+  .rail .pill.active, .rail .pill:hover { border-radius: 12px; background: var(--accent); }
 
-        .game-card {
-            width: 280px; height: 380px;
-            background: linear-gradient(145deg, #1a1a1a, #0a0a0a);
-            border: 2px solid #333; border-radius: 20px;
-            display: flex; flex-direction: column; align-items: center; justify-content: space-between;
-            padding: 20px; cursor: pointer; transition: 0.4s; position: relative; overflow: hidden;
-        }
-        .game-card:hover { transform: translateY(-10px); box-shadow: 0 0 30px rgba(0, 242, 255, 0.3); border-color: var(--neon-blue); }
-        
-        .game-card.red-theme:hover { box-shadow: 0 0 30px rgba(255, 0, 76, 0.3); border-color: var(--neon-red); }
+  /* channels sidebar */
+  .sidebar { background: var(--surface); display:flex; flex-direction:column; border-right: 1px solid var(--border); }
+  .sidebar .head { padding: 16px; font-weight: 700; font-size: 16px; border-bottom: 1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+  .chan-list { flex: 1; overflow-y: auto; padding: 8px; }
+  .chan-group-title { color: var(--text3); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing:.5px; padding: 12px 8px 6px; display:flex; justify-content:space-between; align-items:center; }
+  .chan-group-title button { background:none; color: var(--text3); font-size: 16px; line-height: 1; }
+  .chan { display:flex; align-items:center; gap: 8px; padding: 8px 10px; border-radius: 6px; color: var(--text2); background:none; width:100%; text-align:left; font-size: 15px; }
+  .chan:hover { background: var(--hover); color: var(--text); }
+  .chan.active { background: var(--accent-soft); color: var(--text); }
+  .chan .hash { color: var(--text3); }
+  .me-bar { padding: 10px 12px; border-top: 1px solid var(--border); display:flex; align-items:center; gap: 10px; }
+  .me-bar .av { width: 34px; height: 34px; border-radius: 50%; background: var(--raised); display:flex;align-items:center;justify-content:center; font-size:18px; }
+  .me-bar .info { flex:1; min-width:0; }
+  .me-bar .info .n { font-size: 14px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .me-bar .info .s { font-size: 12px; color: var(--green); }
+  .me-bar .logout { background:none; color: var(--text3); font-size: 18px; padding: 4px; }
+  .me-bar .logout:hover { color: var(--red); }
 
-        .card-img { font-size: 6rem; margin-top: 40px; filter: drop-shadow(0 0 20px rgba(255,255,255,0.2)); transition: 0.3s; }
-        .game-card:hover .card-img { transform: scale(1.1); }
+  /* main chat */
+  .main { display:flex; flex-direction:column; background: var(--canvas); min-width: 0; }
+  .chat-head { padding: 14px 20px; border-bottom: 1px solid var(--border); display:flex; align-items:center; gap: 10px; }
+  .chat-head .title { font-weight: 700; font-size: 16px; }
+  .chat-head .desc { color: var(--text3); font-size: 13px; border-left: 1px solid var(--border); padding-left: 10px; margin-left: 4px; }
+  .chat-head .actions { margin-left:auto; display:flex; gap: 8px; }
+  .icon-btn { width: 38px; height: 38px; border-radius: 8px; background: var(--raised); color: var(--text2); font-size: 18px; display:flex;align-items:center;justify-content:center; }
+  .icon-btn:hover { background: var(--hover); color: var(--text); }
+  .icon-btn.call { background: var(--green); color:#fff; }
 
-        .card-title { font-family: 'Orbitron'; font-size: 1.8rem; font-weight: 900; margin-bottom: 10px; }
-        .game-card.blue-theme .card-title { color: var(--neon-blue); text-shadow: 0 0 10px var(--neon-blue); }
-        .game-card.red-theme .card-title { color: var(--neon-red); text-shadow: 0 0 10px var(--neon-red); }
+  .messages { flex: 1; overflow-y: auto; padding: 20px; display:flex; flex-direction:column; gap: 2px; }
+  .msg { display:flex; gap: 12px; padding: 6px 8px; border-radius: 8px; }
+  .msg:hover { background: rgba(255,255,255,.03); }
+  .msg .av { width: 40px; height: 40px; border-radius: 50%; background: var(--raised); display:flex;align-items:center;justify-content:center; font-size:20px; flex-shrink:0; }
+  .msg .body { min-width: 0; flex:1; }
+  .msg .meta { display:flex; align-items:baseline; gap: 8px; }
+  .msg .meta .name { font-weight: 600; font-size: 15px; }
+  .msg .meta .time { color: var(--text3); font-size: 12px; }
+  .msg .txt { color: #e8e8e8; word-wrap: break-word; white-space: pre-wrap; }
+  .msg img.att { max-width: 320px; max-height: 240px; border-radius: 10px; margin-top: 6px; display:block; border: 1px solid var(--border); }
+  .msg .file-att { display:inline-flex; align-items:center; gap:10px; margin-top:6px; background: var(--raised); border:1px solid var(--border); padding: 10px 14px; border-radius: 8px; text-decoration:none; color: var(--text); }
+  .msg .file-att .fi { font-size: 22px; }
+  .msg .file-att .fn { font-weight:600; font-size:14px; }
+  .msg .file-att .fs { font-size:12px; color: var(--text3); }
+  .day-sep { text-align:center; color: var(--text3); font-size: 12px; margin: 14px 0; position:relative; }
+  .day-sep::before { content:""; position:absolute; top:50%; left:0; right:0; height:1px; background: var(--border); z-index:0; }
+  .day-sep span { background: var(--canvas); padding: 0 12px; position:relative; z-index:1; }
+  .empty-chan { color: var(--text3); text-align:center; margin: auto; padding: 40px; }
+  .empty-chan .big { font-size: 40px; margin-bottom: 8px; }
 
-        .btn-play { 
-            width: 100%; padding: 12px; border: none; border-radius: 8px; 
-            font-weight: 900; font-family: 'Orbitron'; font-size: 1.1rem; cursor: pointer; 
-        }
-        .blue-theme .btn-play { background: var(--neon-blue); color: #000; box-shadow: 0 0 15px rgba(0, 242, 255, 0.4); }
-        .red-theme .btn-play { background: var(--neon-red); color: #000; box-shadow: 0 0 15px rgba(255, 0, 76, 0.4); }
+  .composer { padding: 12px 20px 20px; }
+  .composer .box { background: var(--raised); border: 1px solid var(--border); border-radius: 12px; display:flex; align-items:flex-end; gap: 8px; padding: 6px 8px; }
+  .composer .box:focus-within { border-color: var(--accent); }
+  .composer textarea { flex:1; background:none; border:none; color: var(--text); resize:none; font-size: 15px; padding: 8px; max-height: 140px; }
+  .composer textarea:focus { outline: none; }
+  .composer .c-btn { width: 38px; height: 38px; border-radius: 8px; background:none; color: var(--text2); font-size: 20px; display:flex;align-items:center;justify-content:center; }
+  .composer .c-btn:hover { background: var(--hover); color: var(--text); }
+  .composer .c-btn.send { background: var(--accent); color:#fff; }
 
-        /* --- LOGIN OVERLAY --- */
-        #login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.98); z-index: 9999; display: flex; justify-content: center; align-items: center; }
-        .login-box { width: 400px; padding: 40px; background: rgba(0,0,0,0.8); border: 2px solid var(--neon-gold); border-radius: 20px; box-shadow: 0 0 50px rgba(255, 215, 0, 0.2); text-align: center; }
-        .inp-field { width: 100%; padding: 15px; margin-bottom: 20px; background: #111; border: 1px solid #444; color: #fff; border-radius: 8px; outline: none; }
-        .btn-submit { width: 100%; padding: 15px; background: linear-gradient(45deg, #ffd700, #ff8c00); color: #000; border: none; font-weight: 900; cursor: pointer; border-radius: 8px; font-family: 'Orbitron'; font-size: 1.2rem; }
-    </style>
+  /* members */
+  .members { background: var(--surface); border-left: 1px solid var(--border); padding: 16px; overflow-y:auto; }
+  .members h3 { font-size: 11px; text-transform:uppercase; letter-spacing:.5px; color: var(--text3); margin-bottom: 12px; }
+  .member { display:flex; align-items:center; gap: 10px; padding: 6px; border-radius: 6px; }
+  .member .av { position:relative; width: 34px; height:34px; border-radius:50%; background: var(--raised); display:flex;align-items:center;justify-content:center; font-size:17px; }
+  .member .dot { position:absolute; bottom:-1px; right:-1px; width: 11px; height:11px; border-radius:50%; background: var(--green); border: 2px solid var(--surface); }
+  .member .dot.off { background: var(--text3); }
+  .member .nm { font-size: 14px; }
+  .member.off .nm { color: var(--text3); }
+
+  /* video call overlay */
+  #call { position: fixed; inset: 0; z-index: 200; background: #0d0d0d; display:none; flex-direction:column; }
+  .call-head { padding: 16px 20px; display:flex; align-items:center; gap: 10px; border-bottom: 1px solid var(--border); }
+  .call-head .t { font-weight: 700; }
+  .call-head .badge { background: var(--red); font-size: 12px; padding: 3px 8px; border-radius: 20px; font-weight:600; }
+  .grid { flex:1; display:grid; gap: 12px; padding: 16px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); align-content:center; overflow:auto; }
+  .tile { background: var(--surface); border-radius: 14px; overflow:hidden; position:relative; aspect-ratio: 16/9; display:flex; align-items:center; justify-content:center; border: 1px solid var(--border); }
+  .tile video { width:100%; height:100%; object-fit: cover; }
+  .tile.mine video { transform: scaleX(-1); }
+  .tile .ph { font-size: 56px; }
+  .tile .label { position:absolute; bottom: 10px; left: 10px; background: rgba(0,0,0,.6); padding: 4px 10px; border-radius: 6px; font-size: 13px; font-weight:600; }
+  .tile .muted-i { position:absolute; top:10px; right:10px; background: rgba(0,0,0,.6); width:28px;height:28px;border-radius:50%; display:none; align-items:center;justify-content:center; }
+  .call-bar { display:flex; align-items:center; justify-content:center; gap: 14px; padding: 20px; }
+  .call-bar button { width: 54px; height: 54px; border-radius: 50%; background: var(--raised); color:#fff; font-size: 22px; display:flex;align-items:center;justify-content:center; transition: background .15s; }
+  .call-bar button:hover { background: var(--hover); }
+  .call-bar button.active { background: var(--accent); }
+  .call-bar button.off { background: #4a2a2a; color: var(--red); }
+  .call-bar button.end { background: var(--red); width: 64px; }
+  .hidden { display:none !important; }
+  .toast { position: fixed; bottom: 24px; left:50%; transform:translateX(-50%); background: var(--raised); border:1px solid var(--border); padding: 12px 20px; border-radius: 10px; z-index: 300; box-shadow: 0 8px 30px rgba(0,0,0,.5); font-size:14px; }
+
+  @media (max-width: 900px) {
+    .layout { grid-template-columns: 60px 1fr; }
+    .sidebar { position: fixed; left: 60px; top:0; bottom:0; width: 240px; z-index: 50; transform: translateX(-300px); transition: transform .2s; }
+    .sidebar.open { transform: none; }
+    .members { display: none; }
+    .msg img.att { max-width: 100%; }
+  }
+  /* ---------- Animations & polish ---------- */
+  @keyframes popIn { from { opacity:0; transform: translateY(14px) scale(.97); } to { opacity:1; transform:none; } }
+  @keyframes msgIn { from { opacity:0; transform: translateY(8px); } to { opacity:1; transform:none; } }
+  @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+  @keyframes livePulse { 0%,100% { box-shadow:0 0 0 0 rgba(233,115,102,.6);} 50% { box-shadow:0 0 0 7px rgba(233,115,102,0);} }
+  @keyframes tileIn { from { opacity:0; transform: scale(.92);} to { opacity:1; transform:none; } }
+  @keyframes dotBounce { 0%,60%,100%{ transform: translateY(0); opacity:.35;} 30%{ transform: translateY(-4px); opacity:1;} }
+  @keyframes floatGlow { 0%,100%{ filter: drop-shadow(0 0 0 rgba(138,110,224,0)); } 50%{ filter: drop-shadow(0 0 7px rgba(138,110,224,.6)); } }
+  @keyframes shimmer { 0%{ background-position: -200% 0; } 100%{ background-position: 200% 0; } }
+
+  html { scroll-behavior: smooth; }
+  .login-card { animation: popIn .45s cubic-bezier(.2,.8,.2,1) both; }
+  .brand .logo { animation: floatGlow 3s ease-in-out infinite; }
+  .brand h1 { background: linear-gradient(90deg, #fff, #b7d3f5 40%, #c9b6f0); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+  .msg-in { animation: msgIn .3s cubic-bezier(.2,.8,.2,1) both; }
+  .msg { transition: background .15s; }
+  .chan { transition: background .15s, color .15s, transform .1s; }
+  .chan:active { transform: scale(.98); }
+  .chan.active { box-shadow: inset 3px 0 0 var(--accent); }
+  .icon-btn, .c-btn, .btn, .call-bar button, .rail .pill { transition: background .18s, color .18s, filter .18s, transform .12s, box-shadow .18s; }
+  .icon-btn:active, .c-btn:active, .btn:active, .call-bar button:active { transform: scale(.9); }
+  .icon-btn.call:hover { filter: brightness(1.1); box-shadow: 0 4px 16px rgba(114,188,143,.45); }
+  .c-btn.send:hover { box-shadow: 0 4px 16px rgba(94,159,232,.5); }
+  .btn:active { transform: scale(.98); }
+  .call-head .badge { animation: livePulse 1.6s ease-in-out infinite; }
+  .tile { animation: tileIn .35s cubic-bezier(.2,.8,.2,1) both; }
+  .member .av { transition: transform .15s; }
+  .member:hover { background: var(--hover); }
+  .member:hover .av { transform: scale(1.08); }
+  .member { transition: background .15s; }
+  .toast { animation: popIn .3s ease both; }
+  .empty-chan { animation: fadeIn .5s ease both; }
+  .rail .pill:hover { transform: translateY(-1px); }
+
+  /* typing indicator */
+  .typing { height: 20px; padding: 0 10px 6px; font-size: 13px; color: var(--text3); opacity: 0; transform: translateY(4px); transition: opacity .2s, transform .2s; display:flex; align-items:center; gap:8px; }
+  .typing.show { opacity: 1; transform: none; }
+  .typing .dots { display:inline-flex; gap: 3px; }
+  .typing .dots i { width: 6px; height: 6px; border-radius:50%; background: var(--accent); display:inline-block; animation: dotBounce 1.2s infinite; }
+  .typing .dots i:nth-child(2){ animation-delay:.2s; }
+  .typing .dots i:nth-child(3){ animation-delay:.4s; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; scroll-behavior: auto !important; }
+  }
+</style>
 </head>
 <body>
 
-    <div id="login-overlay">
-        <div class="login-box">
-            <h2 class="logo" style="margin-bottom: 30px; font-size: 3rem;">B52 VIP</h2>
-            <input type="text" id="username" class="inp-field" placeholder="Tên đăng nhập...">
-            <input type="password" id="password" class="inp-field" placeholder="Mật khẩu...">
-            <button class="btn-submit" onclick="handleAuth()">ĐĂNG NHẬP</button>
-            <div id="loading-text" style="color:gold; margin-top:15px; display:none">Đang kết nối...</div>
-        </div>
+<!-- LOGIN -->
+<div id="login">
+  <div class="login-card">
+    <div class="brand"><div class="logo">🐶</div><h1>Chóngu Chat</h1></div>
+    <p class="login-sub">Nhắn tin, gọi video & chia sẻ màn hình cùng nhau.</p>
+    <div class="field">
+      <label>Tên hiển thị</label>
+      <input id="loginName" placeholder="Nhập tên của bạn" autocomplete="off" />
+    </div>
+    <div class="field">
+      <label>Chọn ảnh đại diện</label>
+      <div class="avatar-pick" id="avatarPick"></div>
+    </div>
+    <button class="btn" id="loginBtn">Vào phòng chat</button>
+    <p class="login-hint">Mẹo: Mở app này ở nhiều tab khác nhau để chat thời gian thực với nhau.</p>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="layout">
+    <!-- rail -->
+    <div class="rail">
+      <div class="pill active" title="Chóngu Chat">🐶</div>
+      <div class="pill" title="Thêm server" style="color:var(--green)">+</div>
     </div>
 
-    <div id="lobby-ui" style="display:none;">
-        <div class="top-bar">
-            <div class="logo">B52 VIP</div>
-            <div class="user-info">
-                <i class="fas fa-user-astronaut"></i> <span id="display-user">Guest</span>
-                <div class="balance-box"><span style="color:#ffd700">$</span> <span id="balance">0</span></div>
-                <div class="btn-logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i></div>
-            </div>
-        </div>
-
-        <div class="lobby-container">
-            <div class="welcome-text">CHỌN TRÒ CHƠI</div>
-            
-            <div class="game-grid">
-                <div class="game-card blue-theme" onclick="goToGame('taixiu')">
-                    <div class="card-img"><i class="fas fa-dice"></i></div>
-                    <div class="card-title">TÀI XỈU</div>
-                    <p style="color:#aaa">Minigame Cân Cửa</p>
-                    <button class="btn-play">CHƠI NGAY</button>
-                </div>
-
-                <div class="game-card red-theme" onclick="goToGame('sicbo')">
-                    <div class="card-img"><i class="fas fa-cubes"></i></div>
-                    <div class="card-title">SICBO</div>
-                    <p style="color:#aaa">Đại Chiến Xí Ngầu</p>
-                    <button class="btn-play">CHƠI NGAY</button>
-                </div>
-            </div>
-        </div>
+    <!-- sidebar -->
+    <div class="sidebar" id="sidebar">
+      <div class="head">Chóngu Chat</div>
+      <div class="chan-list">
+        <div class="chan-group-title">Kênh chat <button id="addChan" title="Thêm kênh">+</button></div>
+        <div id="chanList"></div>
+      </div>
+      <div class="me-bar">
+        <div class="av" id="meAv">🐶</div>
+        <div class="info"><div class="n" id="meName">Bạn</div><div class="s">● Đang hoạt động</div></div>
+        <button class="logout" id="logoutBtn" title="Đăng xuất">⏻</button>
+      </div>
     </div>
 
-    <script>
-        const SESSION_KEY = 'b52_current_session'; 
-        let currentUser = null;
-        let globalData = null;
-        const el = (id) => document.getElementById(id);
-        const formatMoney = (n) => n.toString().replace(/\B(?=(\d{3})+(?!\d))/g,",");
+    <!-- main -->
+    <div class="main">
+      <div class="chat-head">
+        <span class="hash" style="color:var(--text3);font-size:18px">#</span>
+        <span class="title" id="chanTitle">chung</span>
+        <span class="desc" id="chanDesc">Kênh trò chuyện chung</span>
+        <div class="actions">
+          <button class="icon-btn call" id="startCall" title="Gọi video">📹</button>
+          <button class="icon-btn" id="shareBtn" title="Chia sẻ màn hình">🖥️</button>
+        </div>
+      </div>
+      <div class="messages" id="messages"></div>
+      <div class="composer">
+        <div class="typing" id="typing"></div>
+        <div class="box">
+          <button class="c-btn" id="attachBtn" title="Đính kèm file/ảnh">➕</button>
+          <textarea id="input" rows="1" placeholder="Nhắn tin tới #chung"></textarea>
+          <button class="c-btn send" id="sendBtn" title="Gửi">➤</button>
+        </div>
+      </div>
+    </div>
 
-        // --- AUTH LOGIC ---
-        async function checkAutoLogin() {
-            const savedUser = localStorage.getItem(SESSION_KEY);
-            if(savedUser) {
-                el('loading-text').style.display='block'; 
-                globalData = await getGlobalData();
-                if(globalData) {
-                    let acc = globalData.users.find(u => u.username === savedUser);
-                    if(acc) { currentUser = acc; showLobby(); }
-                    else el('loading-text').style.display='none';
-                }
-            }
-        }
+    <!-- members -->
+    <div class="members">
+      <h3 id="memCount">Thành viên</h3>
+      <div id="memberList"></div>
+    </div>
+  </div>
+</div>
 
-        async function handleAuth() {
-            const u=el('username').value.trim(), p=el('password').value.trim();
-            if(!u||!p) return alert("Nhập đủ thông tin!");
-            
-            if(u === 'advf14' && p === 'hoangquocthien') { window.location.href = 'admin.html'; return; }
+<!-- CALL -->
+<div id="call">
+  <div class="call-head">
+    <span class="badge">● LIVE</span>
+    <span class="t" id="callTitle">Cuộc gọi video</span>
+  </div>
+  <div class="grid" id="callGrid"></div>
+  <div class="call-bar">
+    <button id="micBtn" class="active" title="Micro">🎤</button>
+    <button id="camBtn" class="active" title="Camera">📷</button>
+    <button id="screenBtn" title="Chia sẻ màn hình">🖥️</button>
+    <button id="endBtn" class="end" title="Kết thúc">📵</button>
+  </div>
+</div>
 
-            el('loading-text').style.display='block'; 
-            globalData = await getGlobalData();
-            
-            if(!globalData) return alert("Lỗi kết nối Server!");
+<input type="file" id="fileInput" class="hidden" multiple />
 
-            let acc = globalData.users.find(x => x.username === u);
-            if(acc) {
-                if(acc.password === p) {
-                    currentUser = acc;
-                    localStorage.setItem(SESSION_KEY, u);
-                    showLobby();
-                } else alert("Sai mật khẩu!");
-            } else {
-                let newUser = { username: u, password: p, balance: 0, betHistory: [] };
-                globalData.users.push(newUser);
-                await saveGlobalData(globalData);
-                currentUser = newUser;
-                localStorage.setItem(SESSION_KEY, u);
-                showLobby();
-            }
-        }
+<script>
+const AVATARS = ["🐶","🐱","🦊","🐼","🐸","🐵","🦁","🐨","🐯","🦄"];
+const DEFAULT_CHANNELS = [
+  { id: "chung", name: "chung", desc: "Kênh trò chuyện chung" },
+  { id: "random", name: "random", desc: "Chuyện linh tinh" },
+  { id: "cong-viec", name: "công-việc", desc: "Trao đổi công việc" },
+];
+const LS = {
+  user: "chongu_user",
+  channels: "chongu_channels",
+  msgs: (c) => "chongu_msgs_" + c,
+};
 
-        function showLobby() {
-            el('login-overlay').style.display = 'none';
-            el('lobby-ui').style.display = 'block';
-            el('display-user').innerText = currentUser.username;
-            el('balance').innerText = formatMoney(currentUser.balance);
-        }
+let me = null;
+let channels = [];
+let activeChan = "chung";
+let bc = null; // BroadcastChannel for cross-tab realtime
+let presence = {}; // userId -> {name, avatar, ts}
+let seenMsgs = new Set(); // ids already animated in
+let typingState = {}; // userId -> {name, channel, ts}
 
-        // --- CHUYỂN HƯỚNG GAME (ĐÃ SỬA) ---
-        function goToGame(type) {
-            if(type === 'taixiu') {
-                window.location.href = 'game.html';
-            } else if(type === 'sicbo') {
-                window.location.href = 'sicbo.html'; // VÀO THẲNG SICBO, KHÔNG ALERT NỮA
-            }
-        }
+/* ---------- Utilities ---------- */
+function uid() { return Math.random().toString(36).slice(2) + Date.now().toString(36); }
+function now() { return Date.now(); }
+function esc(s){ return (s||"").replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+function fmtTime(t){ const d=new Date(t); return d.getHours().toString().padStart(2,"0")+":"+d.getMinutes().toString().padStart(2,"0"); }
+function fmtDay(t){ const d=new Date(t); const today=new Date(); const y=new Date(Date.now()-864e5);
+  if(d.toDateString()===today.toDateString()) return "Hôm nay";
+  if(d.toDateString()===y.toDateString()) return "Hôm qua";
+  return d.toLocaleDateString("vi-VN"); }
+function bytes(n){ if(n<1024) return n+" B"; if(n<1048576) return (n/1024).toFixed(1)+" KB"; return (n/1048576).toFixed(1)+" MB"; }
+function toast(msg){ const t=document.createElement("div"); t.className="toast"; t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(), 2600); }
 
-        function logout() { localStorage.removeItem(SESSION_KEY); location.reload(); }
-        
-        checkAutoLogin();
-    </script>
+/* ---------- Storage ---------- */
+function loadChannels(){
+  const raw = localStorage.getItem(LS.channels);
+  channels = raw ? JSON.parse(raw) : DEFAULT_CHANNELS.slice();
+  if(!raw) localStorage.setItem(LS.channels, JSON.stringify(channels));
+}
+function saveChannels(){ localStorage.setItem(LS.channels, JSON.stringify(channels)); }
+function loadMsgs(c){ const raw = localStorage.getItem(LS.msgs(c)); return raw ? JSON.parse(raw) : []; }
+function saveMsgs(c, arr){ localStorage.setItem(LS.msgs(c), JSON.stringify(arr)); }
+
+/* ---------- Login ---------- */
+function initLogin(){
+  const pick = document.getElementById("avatarPick");
+  let sel = AVATARS[0];
+  AVATARS.forEach((a,i)=>{
+    const b=document.createElement("button");
+    b.textContent=a; if(i===0) b.classList.add("sel");
+    b.onclick=()=>{ sel=a; [...pick.children].forEach(x=>x.classList.remove("sel")); b.classList.add("sel"); };
+    pick.appendChild(b);
+  });
+  document.getElementById("loginBtn").onclick=()=>{
+    const name=document.getElementById("loginName").value.trim();
+    if(!name){ toast("Vui lòng nhập tên hiển thị"); return; }
+    me={ id: uid(), name, avatar: sel };
+    localStorage.setItem(LS.user, JSON.stringify(me));
+    startApp();
+  };
+  document.getElementById("loginName").addEventListener("keydown",e=>{ if(e.key==="Enter") document.getElementById("loginBtn").click(); });
+}
+
+/* ---------- App ---------- */
+function startApp(){
+  document.getElementById("login").style.display="none";
+  document.getElementById("app").style.display="block";
+  document.getElementById("meAv").textContent=me.avatar;
+  document.getElementById("meName").textContent=me.name;
+  loadChannels();
+  renderChannels();
+  selectChannel(activeChan);
+  setupRealtime();
+  bindUI();
+}
+
+function setupRealtime(){
+  bc = new BroadcastChannel("chongu_chat");
+  bc.onmessage = (e)=>{
+    const m = e.data;
+    if(m.type==="msg"){
+      const arr = loadMsgs(m.channel); 
+      if(!arr.find(x=>x.id===m.msg.id)){ arr.push(m.msg); saveMsgs(m.channel, arr); if(m.channel===activeChan) renderMessages(); }
+    } else if(m.type==="presence"){
+      presence[m.user.id]={...m.user, ts: now()}; renderMembers();
+    } else if(m.type==="leave"){
+      delete presence[m.userId]; renderMembers();
+    } else if(m.type==="channels"){
+      loadChannels(); renderChannels();
+    } else if(m.type==="typing"){
+      if(m.user.id!==me.id){ typingState[m.user.id]={name:m.user.name, channel:m.channel, ts: now()}; renderTyping(); }
+    } else if(m.type==="ping"){
+      bc.postMessage({type:"presence", user: me});
+    }
+  };
+  // announce presence
+  presence[me.id]={...me, ts: now()};
+  bc.postMessage({type:"presence", user: me});
+  bc.postMessage({type:"ping"});
+  setInterval(()=>{ bc.postMessage({type:"presence", user: me});
+    // prune stale
+    const t=now(); Object.keys(presence).forEach(k=>{ if(k!==me.id && t-presence[k].ts>15000) delete presence[k]; }); renderMembers();
+  }, 5000);
+  setInterval(()=>{ const t=now(); let ch=false; Object.keys(typingState).forEach(k=>{ if(t-typingState[k].ts>4000){ delete typingState[k]; ch=true; } }); if(ch) renderTyping(); }, 1500);
+  window.addEventListener("beforeunload", ()=>{ bc.postMessage({type:"leave", userId: me.id}); });
+  renderMembers();
+}
+
+function renderChannels(){
+  const list=document.getElementById("chanList"); list.innerHTML="";
+  channels.forEach(c=>{
+    const b=document.createElement("button");
+    b.className="chan"+(c.id===activeChan?" active":"");
+    b.innerHTML=`<span class="hash">#</span> <span>${esc(c.name)}</span>`;
+    b.onclick=()=>selectChannel(c.id);
+    list.appendChild(b);
+  });
+}
+
+function selectChannel(id){
+  activeChan=id; const c=channels.find(x=>x.id===id)||channels[0];
+  document.getElementById("chanTitle").textContent=c.name;
+  document.getElementById("chanDesc").textContent=c.desc||"";
+  document.getElementById("input").placeholder="Nhắn tin tới #"+c.name;
+  renderChannels(); renderMessages();
+  document.getElementById("sidebar").classList.remove("open");
+}
+
+function renderMessages(){
+  const box=document.getElementById("messages"); const arr=loadMsgs(activeChan);
+  if(arr.length===0){
+    box.innerHTML=`<div class="empty-chan"><div class="big">👋</div><div><b>Chào mừng tới #${esc(activeChan)}</b></div><div>Hãy gửi tin nhắn đầu tiên nào!</div></div>`;
+    return;
+  }
+  box.innerHTML=""; let lastDay="", lastUser="", lastTs=0;
+  arr.forEach(m=>{
+    const day=fmtDay(m.ts);
+    if(day!==lastDay){ const s=document.createElement("div"); s.className="day-sep"; s.innerHTML=`<span>${day}</span>`; box.appendChild(s); lastDay=day; lastUser=""; }
+    const grouped = m.userId===lastUser && (m.ts-lastTs)<300000;
+    const el=document.createElement("div"); el.className="msg"; if(!seenMsgs.has(m.id)){ el.classList.add("msg-in"); seenMsgs.add(m.id); }
+    let att="";
+    if(m.attachment){
+      if(m.attachment.kind==="image") att=`<img class="att" src="${m.attachment.data}" alt="${esc(m.attachment.name)}"/>`;
+      else att=`<a class="file-att" href="${m.attachment.data}" download="${esc(m.attachment.name)}"><span class="fi">📎</span><span><span class="fn">${esc(m.attachment.name)}</span><br><span class="fs">${bytes(m.attachment.size)}</span></span></a>`;
+    }
+    el.innerHTML = grouped
+      ? `<div class="av" style="visibility:hidden"></div><div class="body">${m.text?`<div class="txt">${esc(m.text)}</div>`:""}${att}</div>`
+      : `<div class="av">${m.avatar}</div><div class="body"><div class="meta"><span class="name">${esc(m.name)}</span><span class="time">${fmtTime(m.ts)}</span></div>${m.text?`<div class="txt">${esc(m.text)}</div>`:""}${att}</div>`;
+    box.appendChild(el);
+    lastUser=m.userId; lastTs=m.ts;
+  });
+  box.scrollTop=box.scrollHeight;
+}
+
+function sendMessage(text, attachment){
+  if(!text && !attachment) return;
+  const msg={ id: uid(), userId: me.id, name: me.name, avatar: me.avatar, text: text||"", attachment: attachment||null, ts: now() };
+  const arr=loadMsgs(activeChan); arr.push(msg); saveMsgs(activeChan, arr);
+  renderMessages();
+  bc.postMessage({type:"msg", channel: activeChan, msg});
+}
+
+function renderMembers(){
+  const list=document.getElementById("memberList"); list.innerHTML="";
+  const members=Object.values(presence);
+  if(!members.find(m=>m.id===me.id)) members.unshift({...me});
+  document.getElementById("memCount").textContent=`Thành viên — ${members.length}`;
+  members.forEach(m=>{
+    const el=document.createElement("div"); el.className="member";
+    el.innerHTML=`<div class="av">${m.avatar}<span class="dot"></span></div><div class="nm">${esc(m.name)}${m.id===me.id?" (bạn)":""}</div>`;
+    list.appendChild(el);
+  });
+}
+
+function renderTyping(){
+  const el=document.getElementById("typing"); if(!el) return;
+  const t=now();
+  const names=Object.values(typingState).filter(x=>x.channel===activeChan && t-x.ts<4000).map(x=>x.name);
+  if(names.length===0){ el.innerHTML=""; el.classList.remove("show"); return; }
+  const who = names.length===1 ? names[0]+" \u0111ang nh\u1eadp" : names.slice(0,2).join(", ")+" \u0111ang nh\u1eadp";
+  el.innerHTML = `<span class="dots"><i></i><i></i><i></i></span> ${esc(who)}...`;
+  el.classList.add("show");
+}
+
+/* ---------- UI bindings ---------- */
+function bindUI(){
+  const input=document.getElementById("input");
+  const send=()=>{ const t=input.value.trim(); if(t){ sendMessage(t); input.value=""; input.style.height="auto"; } };
+  document.getElementById("sendBtn").onclick=send;
+  input.addEventListener("keydown",e=>{ if(e.key==="Enter" && !e.shiftKey){ e.preventDefault(); send(); } });
+  input.addEventListener("input",()=>{ input.style.height="auto"; input.style.height=Math.min(input.scrollHeight,140)+"px"; if(bc){ bc.postMessage({type:"typing", channel: activeChan, user:{id:me.id,name:me.name}}); } });
+
+  const fileInput=document.getElementById("fileInput");
+  document.getElementById("attachBtn").onclick=()=>fileInput.click();
+  fileInput.onchange=()=>{
+    [...fileInput.files].forEach(f=>{
+      if(f.size>4*1048576){ toast("File tối đa 4MB trong bản demo"); return; }
+      const reader=new FileReader();
+      reader.onload=()=>{ sendMessage("", { kind: f.type.startsWith("image/")?"image":"file", name: f.name, size: f.size, data: reader.result }); };
+      reader.readAsDataURL(f);
+    });
+    fileInput.value="";
+  };
+
+  document.getElementById("addChan").onclick=()=>{
+    const name=prompt("Tên kênh mới:"); if(!name) return;
+    const id=name.toLowerCase().replace(/\s+/g,"-");
+    if(channels.find(c=>c.id===id)){ toast("Kênh đã tồn tại"); return; }
+    channels.push({id, name, desc:""}); saveChannels(); renderChannels(); selectChannel(id);
+    bc.postMessage({type:"channels"});
+  };
+
+  document.getElementById("logoutBtn").onclick=()=>{
+    bc.postMessage({type:"leave", userId: me.id});
+    localStorage.removeItem(LS.user); location.reload();
+  };
+
+  document.getElementById("startCall").onclick=()=>startCall(false);
+  document.getElementById("shareBtn").onclick=()=>startCall(true);
+}
+
+/* ---------- Video call (real WebRTC media) ---------- */
+let localStream=null, screenStream=null;
+let micOn=true, camOn=true;
+
+async function startCall(withScreen){
+  const callEl=document.getElementById("call");
+  callEl.style.display="flex";
+  document.getElementById("callTitle").textContent="Cuộc gọi video — #"+activeChan;
+  const grid=document.getElementById("callGrid"); grid.innerHTML="";
+  try {
+    localStream=await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+  } catch(err){
+    toast("Không truy cập được camera/micro. Kiểm tra quyền trình duyệt.");
+  }
+  // my tile
+  const mine=makeTile(me.avatar, me.name+" (bạn)", true);
+  grid.appendChild(mine.tile);
+  if(localStream){ mine.video.srcObject=localStream; mine.video.classList.remove("hidden"); mine.ph.classList.add("hidden"); }
+  // simulated peers so the grid feels real
+  const others=Object.values(presence).filter(u=>u.id!==me.id).slice(0,3);
+  if(others.length===0){
+    [{avatar:"🐱",name:"Minh"},{avatar:"🦊",name:"Lan"}].forEach(u=>grid.appendChild(makeTile(u.avatar,u.name,false).tile));
+  } else {
+    others.forEach(u=>grid.appendChild(makeTile(u.avatar,u.name,false).tile));
+  }
+  micOn=true; camOn=true; updateCallBtns();
+  if(withScreen) shareScreen();
+}
+
+function makeTile(avatar, label, mine){
+  const tile=document.createElement("div"); tile.className="tile"+(mine?" mine":"");
+  const video=document.createElement("video"); video.autoplay=true; video.playsInline=true; video.muted=mine; video.className="hidden";
+  const ph=document.createElement("div"); ph.className="ph"; ph.textContent=avatar;
+  const lb=document.createElement("div"); lb.className="label"; lb.textContent=label;
+  tile.append(video, ph, lb);
+  return {tile, video, ph};
+}
+
+function updateCallBtns(){
+  const mic=document.getElementById("micBtn"), cam=document.getElementById("camBtn");
+  mic.className=micOn?"active":"off"; mic.textContent=micOn?"🎤":"🔇";
+  cam.className=camOn?"active":"off"; cam.textContent=camOn?"📷":"🚫";
+}
+
+async function shareScreen(){
+  try {
+    screenStream=await navigator.mediaDevices.getDisplayMedia({ video: true });
+    const grid=document.getElementById("callGrid");
+    const t=makeTile("🖥️", me.name+" đang chia sẻ màn hình", false);
+    t.tile.classList.remove("mine");
+    grid.prepend(t.tile);
+    t.video.srcObject=screenStream; t.video.classList.remove("hidden"); t.ph.classList.add("hidden");
+    document.getElementById("screenBtn").classList.add("active");
+    screenStream.getVideoTracks()[0].onended=()=>{ t.tile.remove(); document.getElementById("screenBtn").classList.remove("active"); screenStream=null; };
+  } catch(err){ toast("Đã hủy chia sẻ màn hình"); }
+}
+
+function endCall(){
+  if(localStream){ localStream.getTracks().forEach(t=>t.stop()); localStream=null; }
+  if(screenStream){ screenStream.getTracks().forEach(t=>t.stop()); screenStream=null; }
+  document.getElementById("call").style.display="none";
+  document.getElementById("screenBtn").classList.remove("active");
+}
+
+document.getElementById("micBtn").onclick=()=>{ micOn=!micOn; if(localStream) localStream.getAudioTracks().forEach(t=>t.enabled=micOn); updateCallBtns(); };
+document.getElementById("camBtn").onclick=()=>{ camOn=!camOn; if(localStream) localStream.getVideoTracks().forEach(t=>t.enabled=camOn); 
+  const mv=document.querySelector(".tile.mine video"), mp=document.querySelector(".tile.mine .ph");
+  if(mv&&mp){ if(camOn){mv.classList.remove("hidden");mp.classList.add("hidden");} else {mv.classList.add("hidden");mp.classList.remove("hidden");} }
+  updateCallBtns(); };
+document.getElementById("screenBtn").onclick=()=>{ if(screenStream){ screenStream.getTracks().forEach(t=>t.stop()); } else shareScreen(); };
+document.getElementById("endBtn").onclick=endCall;
+
+/* ---------- Boot ---------- */
+(function(){
+  initLogin();
+  const saved=localStorage.getItem(LS.user);
+  if(saved){ me=JSON.parse(saved); startApp(); }
+})();
+</script>
 </body>
 </html>
